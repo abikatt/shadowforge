@@ -1,0 +1,13 @@
+schema_version = "1.0.0"
+
+id = "io_shadowforge"
+version = "0.4.0"
+name = "ShadowForge"
+tagline = "Import/Export Blue Dragon Xbox 360 assets"
+maintainer = "Tom Clay <tomc@tctechstuff.com>"
+type = "add-on"
+
+blender_version_min = "4.2.0"
+license = ["SPDX:BSD-3-Clause"]
+tags = ["Import-Export", "Pipeline"]
+platforms = ["windows-x64"]

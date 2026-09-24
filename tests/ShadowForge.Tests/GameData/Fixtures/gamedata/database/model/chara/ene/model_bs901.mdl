@@ -1,0 +1,7 @@
+// synthetic shared-rig test model
+<ObjectData>
+{
+	PATH				"chara\ene\em901\"
+	OBJECT				"em901_obj.hdb"
+	MOTPACK				"em901_mot.mpk"
+}

@@ -1,0 +1,5 @@
+# Byte-exact test fixtures are verbatim copies of real Blue Dragon game files
+# (Shift-JIS, CRLF). They must never be line-ending-normalized, or the
+# "round-trips a real file byte-for-byte" guarantee would be validating a
+# mangled copy. Treat them as binary so Git stores them verbatim.
+tests/ShadowForge.Tests/Formats/**/Fixtures/** -text

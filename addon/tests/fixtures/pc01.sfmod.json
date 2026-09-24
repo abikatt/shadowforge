@@ -1,0 +1,19 @@
+{
+  "schema": 1,
+  "entity": { "id": "pc01", "class": "ply", "rigId": "pc01", "rigClass": "ply" },
+  "install": { "gameRoot": "C:\\game", "source": "Install", "modsRoot": "C:\\mods", "modsAvailable": true },
+  "model": {
+    "path": "chara\\ply\\pc01\\",
+    "objectHdb": "pc01_obj.hdb",
+    "objectL0Hdb": "pc01_obj_se.hdb",
+    "motPack": "pc01_mot.mpk",
+    "clips": [ { "name": "WAIT", "hmb": "pc01_wait.hmb" }, { "name": "RUN", "hmb": "pc01_run.hmb" } ]
+  },
+  "files": [
+    { "role": "Skeleton", "vfsPath": "chara\\ply\\pc01\\pc01_obj.hdb",
+      "looseRelPath": "chara\\ipk\\pc01\\ply\\pc01\\pc01_obj.hdb",
+      "ipkName": "pc01.ipk", "ipkInnerPath": "ply\\pc01\\pc01_obj.hdb", "exists": true }
+  ],
+  "textures": [ { "file": "pc01_01.dds", "material": "pc01_body" }, { "file": "pc01_02.dds", "material": null } ],
+  "export": { "glb": "pc01.glb", "upAxis": "Y", "unit": "meter", "clipCount": 165 }
+}

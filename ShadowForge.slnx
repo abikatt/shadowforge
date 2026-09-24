@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="src/ShadowForge.Core/ShadowForge.Core.csproj" />
+  <Project Path="src/ShadowForge.Core.Generators/ShadowForge.Core.Generators.csproj" />
+  <Project Path="src/ShadowForge.CLI/ShadowForge.CLI.csproj" />
+  <Project Path="tests/ShadowForge.Tests/ShadowForge.Tests.csproj" />
+</Solution>

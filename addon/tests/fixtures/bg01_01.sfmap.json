@@ -1,0 +1,14 @@
+{
+  "schema": 1,
+  "stageId": "bg01_01",
+  "category": "town",
+  "regionIpk": "bg01_00.ipk",
+  "models": [
+    {"name": "bg01_01fa.hdb", "objectHdb": "map\\town\\bg01\\bg01_01fa.hdb", "area": 0, "pri": 0.0, "exported": true},
+    {"name": "bg01_sky_a.hdb", "objectHdb": "map\\town\\bg01\\bg01_sky_a.hdb", "area": 0, "pri": -8.0, "exported": false}
+  ],
+  "skipped": [
+    {"kind": "OCT", "path": "map\\town\\bg01\\bg01_01c.hocb", "reason": "sidecar-not-imported-v1"}
+  ],
+  "export": {"glb": "bg01_01.glb", "upAxis": "Y", "unit": "meter"}
+}

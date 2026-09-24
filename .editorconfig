@@ -1,0 +1,63 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+indent_style = space
+
+[*.{cs,csproj,props,targets,axaml,slnx}]
+indent_size = 4
+
+[*.{json,yml,yaml,md}]
+indent_size = 2
+
+[*.cs]
+csharp_style_namespace_declarations = file_scoped:warning
+csharp_prefer_braces = when_multiline:silent
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_style_expression_bodied_properties = when_on_single_line:suggestion
+csharp_style_expression_bodied_accessors = when_on_single_line:suggestion
+dotnet_style_collection_initializer = true:warning
+dotnet_style_object_initializer = true:warning
+dotnet_style_prefer_conditional_expression_over_assignment = true:suggestion
+dotnet_sort_system_directives_first = true
+dotnet_separate_import_directive_groups = false
+
+dotnet_diagnostic.IDE0005.severity = warning
+
+# Format acronyms are written in full caps: IPK, HDB, HMB, GLTF, DDS, EVT,
+# RPJ, MDL, HOC, BDSL, VTX, CLI, GUI. Names mirroring a BCL type keep the
+# framework's own casing (Json, Http, Id, Guid) so ours read alongside theirs.
+dotnet_naming_rule.types_are_pascal_case.severity = warning
+dotnet_naming_rule.types_are_pascal_case.symbols = any_type
+dotnet_naming_rule.types_are_pascal_case.style = pascal_case
+
+dotnet_naming_symbols.any_type.applicable_kinds = class,struct,interface,enum,delegate
+dotnet_naming_symbols.any_type.applicable_accessibilities = *
+
+dotnet_naming_style.pascal_case.capitalization = pascal_case
+
+dotnet_naming_rule.interfaces_start_with_i.severity = warning
+dotnet_naming_rule.interfaces_start_with_i.symbols = any_interface
+dotnet_naming_rule.interfaces_start_with_i.style = i_prefixed
+
+dotnet_naming_symbols.any_interface.applicable_kinds = interface
+dotnet_naming_symbols.any_interface.applicable_accessibilities = *
+
+dotnet_naming_style.i_prefixed.required_prefix = I
+dotnet_naming_style.i_prefixed.capitalization = pascal_case
+
+dotnet_naming_rule.private_fields_are_camel_case.severity = warning
+dotnet_naming_rule.private_fields_are_camel_case.symbols = private_field
+dotnet_naming_rule.private_fields_are_camel_case.style = camel_case
+
+dotnet_naming_symbols.private_field.applicable_kinds = field
+dotnet_naming_symbols.private_field.applicable_accessibilities = private
+dotnet_naming_symbols.private_field.required_modifiers =
+
+dotnet_naming_style.camel_case.capitalization = camel_case
+
+[tests/**/*.cs]
+dotnet_diagnostic.CA1707.severity = none

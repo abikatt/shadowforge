@@ -1,0 +1,7 @@
+// synthetic test model
+<ObjectData>
+{
+	PATH				"chara\ene\em901\"
+	OBJECT				"em901_obj.hdb" "em901_tex_a.csv"
+	MOTPACK				"em901_mot.mpk"
+}

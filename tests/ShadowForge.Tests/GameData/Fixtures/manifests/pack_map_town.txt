@@ -1,0 +1,5 @@
+"db_bg01_01.map","bg01_00.ipk"
+"db_bg06_01.map","bg01_00.ipk"
+"db_bg41_01.map","bg01_00.ipk"
+"db_bg43_01.map","bg01_00.ipk"
+"db_bg02_01.map","bg02_00.ipk"

@@ -1,0 +1,466 @@
+// 【プレイヤー】
+
+<ObjectData>
+{
+	ObjLightId			1						// オブジェクトライトID
+
+	PATH				"chara\ply\pc01\"	
+	OBJECT				"pc01_obj.hdb"
+//	OBJECTL0			"pc01_obj_se.hdb"		// 輪郭線用モデル(ソフトエッジ)
+	MOTPACK				"pc01_mot.mpk"
+
+// イベントモーション用
+		// 移動
+	MOTINPK		EV_WK01		"ev000_pc01_wk01.hmb",	// 移動
+;	MOTINPK		EV_WK02		"ev000_pc01_wk02.hmb"	// 移動
+;	MOTINPK		EV_WK03		"ev000_pc01_wk03.hmb"	// 滑り
+	MOTINPK		EV_RN01		"ev000_pc01_rn01.hmb"	// 移動
+;	MOTINPK		EV_RN02		"ev000_pc01_rn02.hmb"	// 移動
+;	MOTINPK		EV_RN03		"ev000_pc01_rn03.hmb"	// 滑り
+		// ターン
+	MOTINPK		EV_TR01A	"ev000_pc01_tr01a.hmb"	// 右に振り向く
+	MOTINPK		EV_TR01B	"ev000_pc01_tr01b.hmb"	// 右に振り向きループ
+	MOTINPK		EV_TR02A	"ev000_pc01_tr02a.hmb"	// 右に振り向く
+	MOTINPK		EV_TR02B	"ev000_pc01_tr02b.hmb"	// 右に振り向きループ
+	MOTINPK		EV_TL01A	"ev000_pc01_tl01a.hmb"	// 左に振り向く
+	MOTINPK		EV_TL01B	"ev000_pc01_tl01b.hmb"	// 左に振り向きループ
+	MOTINPK		EV_TL02A	"ev000_pc01_tl02a.hmb"	// 左に振り向く
+	MOTINPK		EV_TL02B	"ev000_pc01_tl02b.hmb"	// 左に振り向きループ
+
+		// 待機
+	MOTINPK		EV_WT01		"ev000_pc01_wt01.hmb"	// 待機
+	MOTINPK		EV_WT02		"ev000_pc01_wt02.hmb"	// 待機
+	MOTINPK		EV_WT03		"ev000_pc01_wt03.hmb"	// 待機
+	MOTINPK		EV_WT04		"ev000_pc01_wt04.hmb"	// 待機
+	MOTINPK		EV_WT05		"ev000_pc01_wt05.hmb"	// 待機
+	MOTINPK		EV_WT06		"ev000_pc01_wt06.hmb"	// 待機
+	MOTINPK		EV_WT07		"ev000_pc01_wt07.hmb"	// 待機
+;	MOTINPK		EV_WT08		"ev000_pc01_wt08.hmb"	// 待機
+	MOTINPK		EV_WT09		"ev000_pc01_wt09.hmb"	// 待機
+	MOTINPK		EV_WT10		"ev000_pc01_wt10.hmb"	// 待機
+	MOTINPK		EV_WT11		"ev000_pc01_wt11.hmb"	// 待機
+	MOTINPK		EV_WT12		"ev000_pc01_wt12.hmb"	// 待機
+	MOTINPK		EV_WT13		"ev000_pc01_wt13.hmb"	// 待機
+;	MOTINPK		EV_WT14		"ev000_pc01_wt14.hmb"	// 待機
+;	MOTINPK		EV_WT15		"ev000_pc01_wt15.hmb"	// 待機
+;	MOTINPK		EV_WT16		"ev000_pc01_wt16.hmb"	// 待機
+;	MOTINPK		EV_WT17		"ev000_pc01_wt17.hmb"	// 待機
+;	MOTINPK		EV_WT18		"ev000_pc01_wt18.hmb"	// 待機
+;	MOTINPK		EV_WT19		"ev000_pc01_wt19.hmb"	// 待機
+;	MOTINPK		EV_WT20		"ev000_pc01_wt20.hmb"	// 待機
+		// 会話
+	MOTINPK		EV_TK01A	"ev000_pc01_tk01.hmb"	// 会話Ａ
+	MOTINPK		EV_TK02A	"ev000_pc01_tk02.hmb"	// 会話Ａ
+;	MOTINPK		EV_TK03A	"ev000_pc01_tk03.hmb"	// 会話Ａ
+	MOTINPK		EV_TK04A	"ev000_pc01_tk04.hmb"	// 会話Ａ
+	MOTINPK		EV_TK05A	"ev000_pc01_tk05.hmb"	// 会話Ａ
+	MOTINPK		EV_TK06A	"ev000_pc01_tk06.hmb"	// 会話Ａ
+;	MOTINPK		EV_TK07A	"ev000_pc01_tk07.hmb"	// 会話Ａ
+	MOTINPK		EV_TK08A	"ev000_pc01_tk08.hmb"	// 会話Ａ
+;	MOTINPK		EV_TK09A	"ev000_pc01_tk09.hmb"	// 会話Ａ
+;	MOTINPK		EV_TK10A	"ev000_pc01_tk10.hmb"	// 会話Ａ
+	MOTINPK		EV_TK11A	"ev000_pc01_tk11.hmb"	// 会話Ａ
+
+		// 感情
+;	MOTINPK		EV_AG01A	"ev000_pc01_ag01a.hmb"	// 開始（怒り）
+	MOTINPK		EV_AG01B	"ev000_pc01_ag01b.hmb"	// ループ
+;	MOTINPK		EV_AG01C	"ev000_pc01_ag01c.hmb"	// エンド
+
+;	MOTINPK		EV_SI01A	"ev000_pc01_si01a.hmb"	// 開始（沈黙）
+	MOTINPK		EV_SI01B	"ev000_pc01_si01b.hmb"	// ループ
+;	MOTINPK		EV_SI01C	"ev000_pc01_si01c.hmb"	// エンド
+
+;	MOTINPK		EV_LA01A	"ev000_pc01_la01a.hmb"	// 開始（笑い）
+	MOTINPK		EV_LA01B	"ev000_pc01_la01b.hmb"	// ループ
+;	MOTINPK		EV_LA01C	"ev000_pc01_la01c.hmb"	// エンド
+
+;	MOTINPK		EV_LA02A	"ev000_pc01_la02a.hmb"	// 開始（おお笑い）
+	MOTINPK		EV_LA02B	"ev000_pc01_la02b.hmb"	// ループ
+;	MOTINPK		EV_LA02C	"ev000_pc01_la02c.hmb"	// エンド
+
+;	MOTINPK		EV_SH01A	"ev000_pc01_sh01a.hmb"	// 開始（テレ）
+	MOTINPK		EV_SH01B	"ev000_pc01_sh01b.hmb"	// ループ
+;	MOTINPK		EV_SH01C	"ev000_pc01_sh01c.hmb"	// エンド
+
+;	MOTINPK		EV_ED01A	"ev000_pc01_ed01a.hmb"	// 開始（耐え）
+	MOTINPK		EV_ED01B	"ev000_pc01_ed01b.hmb"	// ループ
+;	MOTINPK		EV_ED01C	"ev000_pc01_ed01c.hmb"	// エンド
+
+;	MOTINPK		EV_SP01A	"ev000_pc01_sp01a.hmb"	// 開始（驚き）
+	MOTINPK		EV_SP01B	"ev000_pc01_sp01b.hmb"	// ループ
+;	MOTINPK		EV_SP01C	"ev000_pc01_sp01c.hmb"	// エンド
+
+;	MOTINPK		EV_TH01A	"ev000_pc01_th01a.hmb"	// 開始（考え）
+;	MOTINPK		EV_TH01B	"ev000_pc01_th01b.hmb"	// ループ
+;	MOTINPK		EV_TH01C	"ev000_pc01_th01c.hmb"	// エンド
+
+;	MOTINPK		EV_CR01A	"ev000_pc01_cr01a.hmb"	// 開始（なき）
+;	MOTINPK		EV_CR01B	"ev000_pc01_cr01b.hmb"	// ループ
+;	MOTINPK		EV_CR01C	"ev000_pc01_cr01c.hmb"	// エンド
+
+	// 座り
+;	MOTINPK		EV_SD01A	"ev000_pc01_sd01a.hmb"	// 開始（座り）
+	MOTINPK		EV_SD01B	"ev000_pc01_sd01b.hmb"	// ループ
+;	MOTINPK		EV_SD01C	"ev000_pc01_sd01c.hmb"	// エンド
+
+// フィールドモーション用
+	MOTINPK		FD_WK01		"pc01_fd_wk01.hmb"		0.f,	// 移動（歩き）
+	MOTINPK		FD_WK02		"pc01_fd_wk01.hmb"		0.f,	// 移動（重い歩き）
+	MOTINPK		FD_WK03		"pc01_fd_wk01.hmb"		0.f,	// 滑り（歩き）
+	MOTINPK		FD_RN01		"pc01_fd_rn01.hmb"		0.f,	// 移動（走り）
+	MOTINPK		FD_RN02		"pc01_fd_rn01.hmb"		0.f,	// 移動（重い走り）
+	MOTINPK		FD_RN03		"pc01_fd_rn01.hmb"		0.f,	// 滑り（走り）
+	MOTINPK		FD_WT01		"pc01_fd_wt01.hmb"		0.f,	// 待機
+	MOTINPK		FD_WT02		"pc01_fd_wt01.hmb"		0.f,	// 待機バリエーション（通常）
+	MOTINPK		FD_WT03		"pc01_fd_wt01.hmb"		0.f,	// 待機バリエーション（状態異常）
+	MOTINPK		FD_WT04		"pc01_fd_wt01.hmb"		0.f,	// 待機バリエーション（ギミック）
+	MOTINPK		FD_DM01		"pc01_fd_wk01.hmb"		0.f,	// ダメージ
+;	MOTINPK		FD_AT01A	"-"						0.f,	// エンカウント（待機）
+	MOTINPK		FD_AT02A	"pc01_fd_at01.hmb"		0.f,	// エンカウント（走り）
+;	MOTINPK		FD_AT02B	"-"						0.f,	// エンカウント（走り）
+;	MOTINPK		FD_AT02C	"-"						0.f,	// エンカウント（走り）
+	MOTINPK		FD_FA01A	"pc01_fd_fa01a.hmb"		0.f,	// 落とし穴
+;	MOTINPK		FD_FA01B	"-"						0.f,	// 落とし穴ループ
+	MOTINPK		FD_FA01C	"pc01_fd_fa01c.hmb"		0.f,	// 落とし穴着地
+;	MOTINPK		FD_UD00		"-"						0.f,	// ハシゴ待機
+;	MOTINPK		FD_UD01A	"-"						0.f,	// ハシゴ上り
+;	MOTINPK		FD_UD01B	"-"						0.f,	// ハシゴ上りループ
+;	MOTINPK		FD_UD01C	"-"						0.f,	// ハシゴ降り
+;	MOTINPK		FD_UD02A	"-"						0.f,	// ハシゴ下り
+;	MOTINPK		FD_UD02B	"-"						0.f,	// ハシゴ下りループ
+;	MOTINPK		FD_UD02C	"-"						0.f,	// ハシゴ降り
+	MOTINPK		FD_PU01A	"pc01_fd_pu01a.hmb"		0.f,	// オブジェクトに手をかける
+	MOTINPK		FD_PU01B	"pc01_fd_pu01b.hmb"		0.f,	// オブジェクトに手をかける・待機
+	MOTINPK		FD_PU01C	"pc01_fd_pu01c.hmb"		0.f,	// オブジェクトに手をかける戻り
+	MOTINPK		FD_PU01D	"pc01_fd_pu01d.hmb"		0.f,	// オブジェクトを押す
+	MOTINPK		FD_PU01E	"pc01_fd_pu01e.hmb"		0.f,	// オブジェクトを引く
+;	MOTINPK		FD_PU01F	"pc01_fd_pu01f.hmb"		0.f,	// オブジェクトを押す２
+;	MOTINPK		FD_WC01A	"-"						0.f,	// ワープクリップをはめる（始め）
+;	MOTINPK		FD_WC01B	"-"						0.f,	// ワープクリップをはめる（ループ）
+;	MOTINPK		FD_WC01C	"-"						0.f,	// ワープクリップをはめる（終了）
+;	MOTINPK		FD_WP01A	"-"						0.f,	// ワープ離陸
+;	MOTINPK		FD_WP01B	"-"						0.f,	// ワープループ
+;	MOTINPK		FD_WP01C	"-"						0.f,	// ワープ着地
+	MOTINPK		FD_LK01A	"pc01_fd_lk01a.hmb"		0.f,	// 立ち→しゃがみ
+	MOTINPK		FD_LK01B	"pc01_fd_lk01b.hmb"		0.f,	// しゃがみ待機
+	MOTINPK		FD_LK01C	"pc01_fd_lk01c.hmb"		0.f,	// しゃがみ→立ち
+	MOTINPK		FD_LK02A	"pc01_fd_lk02a.hmb"		0.f,	// 手を差し伸べる（胸高）
+	MOTINPK		FD_LK02B	"pc01_fd_lk02b.hmb"		0.f,	// 手を差し伸べる（胸高）・待機
+	MOTINPK		FD_LK02C	"pc01_fd_lk02c.hmb"		0.f,	// 手を差し伸べる（胸高）・戻し
+	MOTINPK		FD_LK03A	"pc01_fd_lk03a.hmb"		0.f,	// 手を差し伸べる（腰高）
+	MOTINPK		FD_LK03B	"pc01_fd_lk03b.hmb"		0.f,	// 手を差し伸べる（腰高）・待機
+	MOTINPK		FD_LK03C	"pc01_fd_lk03c.hmb"		0.f,	// 手を差し伸べる（腰高）・戻し
+	MOTINPK		FD_LK04A	"pc01_fd_lk04a.hmb"		0.f,	// 壷・タル覗き込む(始め）
+	MOTINPK		FD_LK04B	"pc01_fd_lk04b.hmb"		0.f,	// 壷・タル覗き込む（ループ）
+	MOTINPK		FD_LK04C	"pc01_fd_lk04c.hmb"		0.f,	// 壷・タル覗き込む（終了）
+	MOTINPK		FD_LK05A	"pc01_fd_wk01.hmb"		0.f,	// 本読み（始め）
+	MOTINPK		FD_LK05B	"pc01_fd_lk05b.hmb"		0.f,	// 本読み（ループ）
+	MOTINPK		FD_LK05C	"pc01_fd_wk01.hmb"		0.f,	// 本読み（終了）
+	MOTINPK		FD_LK06A	"pc01_fd_lk06a.hmb"		0.f,	// タンスの引き出しを引き出す（始め）
+	MOTINPK		FD_LK06B	"pc01_fd_lk06b.hmb"		0.f,	// タンスの引き出しを引き出す（ループ）
+	MOTINPK		FD_LK06C	"pc01_fd_lk06c.hmb"		0.f,	// タンスの引き出しを引き出す（終了）
+	MOTINPK		FD_LK07A	"pc01_fd_lk07a.hmb"		0.f,	// タンスの両開き扉を開く（始め）
+	MOTINPK		FD_LK07B	"pc01_fd_lk07b.hmb"		0.f,	// タンスの両開き扉を開く（ループ）
+	MOTINPK		FD_LK07C	"pc01_fd_lk07c.hmb"		0.f,	// タンスの両開き扉を開く（終了）
+	MOTINPK		FD_LK08A	"pc01_fd_lk08a.hmb"		0.f,	// 宝箱開け（始め）
+	MOTINPK		FD_LK08B	"pc01_fd_lk08b.hmb"		0.f,	// 宝箱開け（ループ）
+	MOTINPK		FD_LK08C	"pc01_fd_lk08c.hmb"		0.f,	// 宝箱開け（終了）
+	MOTINPK		FD_LK09		"pc01_fd_lk09.hmb"		0.f,	// ボタンを押す
+	MOTINPK		FD_RE01		"pc01_fd_re01.hmb"		0.f,	// 
+	MOTINPK		FD_RE02		"pc01_fd_re02.hmb"		0.f,	// 喜ぶ（ガッツポーズ）
+	MOTINPK		FD_RE03		"pc01_fd_re03.hmb"		0.f,	// がっかり落ち込む
+	MOTINPK		FD_RE04		"pc01_fd_re04.hmb"		0.f,	// 回復
+	MOTINPK		FD_RE05		"pc01_fd_re05.hmb"		0.f,	// ダメージ
+	MOTINPK		FD_RE06		"pc01_fd_re06.hmb"		0.f,	// 驚く
+	MOTINPK		FD_RE07		"pc01_fd_re07.hmb"		0.f,	// 怒る
+	MOTINPK		FD_RE08		"pc01_fd_re08.hmb"		0.f,	// 寝る（ループ）
+	MOTINPK		FD_RE09A	"pc01_fd_re09a.hmb"		0.f,	// 蹴り
+	MOTINPK		FD_RE09B	"pc01_fd_re09b.hmb"		0.f,	// 蹴った後痺れる
+	MOTINPK		FD_RE11		"pc01_fd_re11.hmb"		0.f,	// うなずく
+;	MOTINPK		FD_EV01A	"-"						0.f,	// ハンドルを回す（始め）
+;	MOTINPK		FD_EV01B	"-"						0.f,	// ハンドルを回す（ループ）
+;	MOTINPK		FD_EV01C	"-"						0.f,	// ハンドルを回す（終了）
+;	MOTINPK		FD_EV02A	"-"						0.f,	// 首輪をはずそうとする（始め）
+;	MOTINPK		FD_EV02B	"-"						0.f,	// 首輪をはずそうとする（ループ）
+;	MOTINPK		FD_EV02C	"-"						0.f,	// 首輪をはずそうとする（終了）
+;	MOTINPK		FD_EV03A	"-"						0.f,	// クルックキャッチ
+	MOTINPK		FD_MT01		"pc01_fd_mt01.hmb"		0.f,	// メカット座り
+
+	MOTINPK		PT_SP01		"pc01_fd_sp01.hmb"		0.f,	// 寝ているループ
+	MOTINPK		PT_SP02		"pc01_fd_sp02.hmb"		0.f,	// 起き上がるワンショット
+                                        
+// バトルモーション用
+	MOTINPK		BT_AE01		"pc01_bt_ap01.hmb"		0.f,	// 相性イベント用
+	MOTINPK		BT_AP01		"pc01_bt_ap01.hmb"		0.f,	// 登場
+	MOTINPK		BT_AP02		"pc01_bt_ap01.hmb"		0.f,	// 戦闘開始２
+;	MOTINPK		BT_AT01A	"pc01_bt_at01a.hmb"		0.f,	// 通常攻撃（移動）
+	MOTINPK		BT_AT01B	"pc01_bt_at01.hmb"		0.f,	// 通常攻撃
+;	MOTINPK		BT_AT01C	"pc01_bt_at01c.hmb"		0.f,	// 通常攻撃（戻り）
+	MOTINPK		BT_AV01		"pc01_bt_av01.hmb"		0.f,	// 回避
+	MOTINPK		BT_CA01		"pc01_bt_ca01.hmb"		0.f,	// カテゴリ別攻撃
+	MOTINPK		BT_CA02		"pc01_bt_ca02.hmb"		0.f,	// カテゴリ別攻撃
+	MOTINPK		BT_CA03		"pc01_bt_ca03.hmb"		0.f,	// カテゴリ別攻撃
+	MOTINPK		BT_CA04		"pc01_bt_ca04.hmb"		0.f,	// カテゴリ別攻撃
+	MOTINPK		BT_CA05		"pc01_bt_ca05.hmb"		0.f,	// カテゴリ別攻撃
+;	MOTINPK		BT_CU01		"pc01_bt_cu01.hmb"		0.f,	// カウンター
+	MOTINPK		BT_DD01		"pc01_bt_dd01.hmb"		0.f,	// 死亡1
+	MOTINPK		BT_DD02		"pc01_bt_dd01.hmb"		0.f,	// 死亡2
+	MOTINPK		BT_DD03		"pc01_bt_dd01.hmb"		0.f,	// 死亡3
+	MOTINPK		BT_DM01		"pc01_bt_dm01.hmb"		0.f,	// ダメージ弱
+	MOTINPK		BT_DM02		"pc01_bt_dm02.hmb"		0.f,	// ダメージ中
+	MOTINPK		BT_DY01		"pc01_bt_dy01.hmb"		0.f,	// 瀕死
+	MOTINPK		BT_ES01		"pc01_fd_rn01.hmb"		0.f,	// 逃走
+	MOTINPK		BT_GD01A	"pc01_bt_gd01a.hmb"		0.f,	// 防御開始
+	MOTINPK		BT_GD01B	"pc01_bt_gd01b.hmb"		0.f,	// 防御待機
+	MOTINPK		BT_GD01C	"pc01_bt_gd01c.hmb"		0.f,	// 防御受け
+	MOTINPK		BT_GS01A	"pc01_bt_gs01a.hmb"		0.f,	// ガード（開始）
+	MOTINPK		BT_GS01B	"pc01_bt_gs01b.hmb"		0.f,	// ガード（溜め）
+	MOTINPK		BT_GS01C	"pc01_bt_gs01c.hmb"		0.f,	// ガード（発動）
+	MOTINPK		BT_IT01		"pc01_bt_it01.hmb"		0.f,	// アイテム使用
+	MOTINPK		BT_IT02		"pc01_bt_it02.hmb"		0.f,	// アイテム投げる
+	MOTINPK		BT_MB01		"pc01_bt_mb01.hmb"		0.f,	// 隊列変更（後）
+	MOTINPK		BT_MF01		"pc01_bt_mf01.hmb"		0.f,	// 前列に移動
+	MOTINPK		BT_MG01		"pc01_bt_mg01.hmb"		0.f,	// 魔法発動A
+	MOTINPK		BT_MG02		"pc01_bt_mg02.hmb"		0.f,	// 魔法発動B
+	MOTINPK		BT_MG03		"pc01_bt_mg03.hmb"		0.f,	// 魔法発動C
+	MOTINPK		BT_MG04		"pc01_bt_mg04.hmb"		0.f,	// 魔法発動D
+	MOTINPK		BT_MG05		"pc01_bt_mg05.hmb"		0.f,	// 魔法発動E
+	MOTINPK		BT_PL01A	"pc01_bt_pl01a.hmb"		0.f,	// 溜め開始
+	MOTINPK		BT_PL01B	"pc01_bt_pl01b.hmb"		0.f,	// 溜めループ
+	MOTINPK		BT_PL01C	"pc01_bt_pl01c.hmb"		0.f,	// 溜め発動
+;	MOTINPK		BT_RA01A	"pc01_bt_ra01a.hmb"		0.f,	// 連続攻撃（開始）
+	MOTINPK		BT_RA01B	"pc01_bt_ra01b.hmb"		0.f,	// 連続攻撃（２発目）
+;	MOTINPK		BT_RA01C	"pc01_bt_ra01c.hmb"		0.f,	// 連続攻撃（戻り）
+;	MOTINPK		BT_RA02A	"pc01_bt_ra02a.hmb"		0.f,	// 連続攻撃（開始）
+	MOTINPK		BT_RA02B	"pc01_bt_ra02b.hmb"		0.f,	// 連続攻撃（ラッシュ）
+;	MOTINPK		BT_RA02C	"pc01_bt_ra02c.hmb"		0.f,	// 連続攻撃（戻り）
+;	MOTINPK		BT_RA03A	"pc01_bt_ra03a.hmb"		0.f,	// 範囲攻撃（開始）
+	MOTINPK		BT_RA03B	"pc01_bt_ra03b.hmb"		0.f,	// 範囲攻撃（単発）
+;	MOTINPK		BT_RA03C	"pc01_bt_ra03c.hmb"		0.f,	// 範囲攻撃（戻り）
+;	MOTINPK		BT_RA04A	"pc01_bt_ra04a.hmb"		0.f,	// 範囲攻撃（開始）
+	MOTINPK		BT_RA04B	"pc01_bt_ra04b.hmb"		0.f,	// 範囲攻撃（２発）
+;	MOTINPK		BT_RA04C	"pc01_bt_ra04c.hmb"		0.f,	// 範囲攻撃（戻り）
+;	MOTINPK		BT_RA05A	"pc01_bt_ra05a.hmb"		0.f,	// 範囲攻撃（開始）
+	MOTINPK		BT_RA05B	"pc01_bt_ra05b.hmb"		0.f,	// 範囲攻撃（ラッシュ）
+;	MOTINPK		BT_RA05C	"pc01_bt_ra05c.hmb"		0.f,	// 範囲攻撃（戻り）
+	MOTINPK		BT_RE01		"pc01_bt_re01.hmb"		0.f,	// 復活
+;	MOTINPK		BT_RF01		"-"						0.f,	// 増援登場
+	MOTINPK		BT_SK01A	"pc01_bt_sk01.hmb"		0.f,	// スキル１（移動）
+;	MOTINPK		BT_SK01B	"-"						0.f,	// スキル１
+;	MOTINPK		BT_SK01C	"-"						0.f,	// スキル１（戻り）
+	MOTINPK		BT_SK02A	"pc01_bt_sk02.hmb"		0.f,	// スキル２（移動）
+;	MOTINPK		BT_SK02B	"-"						0.f,	// スキル２
+;	MOTINPK		BT_SK02C	"-"						0.f,	// スキル２（戻り）
+	MOTINPK		BT_SK03A	"pc01_bt_sk03.hmb"		0.f,	// スキル３（移動）
+;	MOTINPK		BT_SK03B	"-"						0.f,	// スキル３
+;	MOTINPK		BT_SK03C	"-"						0.f,	// スキル３（戻り）
+	MOTINPK		BT_SK04A	"pc01_bt_sk04.hmb"		0.f,	// スキル４（移動）
+;	MOTINPK		BT_SK04B	"-"						0.f,	// スキル４
+;	MOTINPK		BT_SK04C	"-"						0.f,	// スキル４（戻り）
+;	MOTINPK		BT_SK05A	"-"						0.f,	// スキル５（移動）
+;	MOTINPK		BT_SK05B	"-"						0.f,	// スキル５
+;	MOTINPK		BT_SK05C	"-"						0.f,	// スキル５（戻り）
+	MOTINPK		BT_SL01		"pc01_bt_sl01.hmb"		0.f,	// ぬすむ
+;	MOTINPK		BT_ST01A	"-"						0.f,	// 気絶(入り)
+	MOTINPK		BT_ST01B	"pc01_bt_st01.hmb"		0.f,	// 気絶
+;	MOTINPK		BT_ST01C	"-"						0.f,	// 気絶(戻り)
+;	MOTINPK		BT_ST02A	"-"						0.f,	// 睡眠(入り)
+	MOTINPK		BT_ST02B	"pc01_bt_st02.hmb"		0.f,	// 睡眠
+;	MOTINPK		BT_ST02C	"-"						0.f,	// 睡眠(戻り)
+;	MOTINPK		BT_ST03A	"-"						0.f,	// 麻痺(入り)
+	MOTINPK		BT_ST03B	"pc01_bt_st03.hmb"		0.f,	// 麻痺
+;	MOTINPK		BT_ST03C	"-"						0.f,	// 麻痺(戻り)
+	MOTINPK		BT_WI01		"pc01_bt_wi01.hmb"		0.f,	// 勝利ポーズ
+	MOTINPK		BT_WI02		"pc01_bt_wi01b.hmb"		0.f,	// 勝利ポーズ2
+	MOTINPK		BT_WT01		"pc01_bt_wt01.hmb"		0.f,	// 待機
+	MOTINPK		BT_WT02		"pc01_bt_wt02.hmb"		0.f,	// 待機バリエーション
+
+
+// リップモーション
+	MOTINPK		LIP_A		"pc01_fc_a.hmb"	
+	MOTINPK		LIP_I		"pc01_fc_i.hmb"
+	MOTINPK		LIP_U		"pc01_fc_u.hmb"
+	MOTINPK		LIP_E		"pc01_fc_e.hmb"
+	MOTINPK		LIP_O		"pc01_fc_o.hmb"
+	MOTINPK		LIP_N		"pc01_fc_n.hmb"
+	MOTINPK		LIP_NM		"pc01_fc_nm.hmb"
+	MOTINPK		LIP_BA		"pc01_fc_ba.hmb"
+	MOTINPK		LIP_BI		"pc01_fc_bi.hmb"
+	MOTINPK		LIP_BE		"pc01_fc_be.hmb"
+	MOTINPK		LIP_BO		"pc01_fc_bo.hmb"
+	MOTINPK		LIP_KU		"pc01_fc_ku.hmb"
+	MOTINPK		LIP_KA		"pc01_fc_ka.hmb"
+	MOTINPK		LIP_KI		"pc01_fc_ki.hmb"
+	MOTINPK		LIP_KH		"pc01_fc_kh.hmb"
+	MOTINPK		LIP_NK		"pc01_fc_nk.hmb"
+	MOTINPK		LIP_TALK	"pc01_fc_talk.hmb"
+
+
+	CCOLLIRADIUS 1 6.0f 0.0f 7.0f 0.0f 10.0f	// キャラコリジョン半径（タイプ, 半径, オフセットX,Y,Z, 高さ）
+
+}
+
+//	表情コントロール
+	UVEYE	pc01_eye_l_01 0 -0.06 -0.05 -0.1 -0.1 0.15 0.2 		// 左目
+	UVEYE	pc01_eye_r_01 1 -0.06 -0.05 -0.1 -0.1 0.15 0.2		// 右目
+	TEXPAT	EYE_SMALL pc01_eye_l_02 pc01_eye_l_01 0				// 左目
+	TEXPAT	EYE_SMALL pc01_eye_r_02 pc01_eye_r_01 1				// 右目
+	
+	PATCHG	pc01_eyelid_l_01 0	// 左まぶた
+	PATCHG	pc01_eyelid_r_01 1	// 右まぶた
+
+	TEXMOT	FACE_NORMAL		"pc01_face_normal.csv" 0
+	TEXMOT	FACE_NORMAL		"pc01_face_normal.csv" 1
+	TEXMOT	FACE_BLINK		"pc01_face_blink.csv" 0
+	TEXMOT	FACE_BLINK		"pc01_face_blink.csv" 1
+	TEXMOT	FACE_CLOSE		"pc01_face_close.csv" 0
+	TEXMOT	FACE_CLOSE		"pc01_face_close.csv" 1
+	TEXMOT	FACE_NM_CLOSE		"pc01_face_nm_close2.csv" 0
+	TEXMOT	FACE_NM_CLOSE		"pc01_face_nm_close2.csv" 1
+	TEXMOT	FACE_NM_CLOSE_IN	"pc01_face_nm_close.csv" 0
+	TEXMOT	FACE_NM_CLOSE_IN	"pc01_face_nm_close.csv" 1
+	TEXMOT	FACE_NM_CLOSE_OUT	"pc01_face_nm_open.csv" 0
+	TEXMOT	FACE_NM_CLOSE_OUT	"pc01_face_nm_open.csv" 1
+	TEXMOT	FACE_KI			"pc01_face_ki.csv" 0
+	TEXMOT	FACE_KI			"pc01_face_ki.csv" 1
+	TEXMOT	FACE_DO			"pc01_face_do_l.csv" 0
+	TEXMOT	FACE_DO			"pc01_face_do_r.csv" 1
+	TEXMOT	FACE_DO_BLINK		"pc01_face_do_l_blink.csv" 0
+	TEXMOT	FACE_DO_BLINK		"pc01_face_do_r_blink.csv" 1
+	TEXMOT	FACE_DO_CLOSE		"pc01_face_do_l_close2.csv" 0
+	TEXMOT	FACE_DO_CLOSE		"pc01_face_do_r_close2.csv" 1
+	TEXMOT	FACE_DO_CLOSE_IN	"pc01_face_do_l_close.csv" 0
+	TEXMOT	FACE_DO_CLOSE_IN	"pc01_face_do_r_close.csv" 1
+	TEXMOT	FACE_DO_CLOSE_OUT	"pc01_face_do_l_open.csv" 0
+	TEXMOT	FACE_DO_CLOSE_OUT	"pc01_face_do_r_open.csv" 1
+	TEXMOT	FACE_DO_REV		"pc01_face_do_r.csv" 0
+	TEXMOT	FACE_DO_REV		"pc01_face_do_l.csv" 1
+	TEXMOT	FACE_DO_REV_BLINK	"pc01_face_do_r_blink.csv" 0
+	TEXMOT	FACE_DO_REV_BLINK	"pc01_face_do_l_blink.csv" 1
+	TEXMOT	FACE_DO_REV_CLOSE	"pc01_face_do_r_close2.csv" 0
+	TEXMOT	FACE_DO_REV_CLOSE	"pc01_face_do_l_close2.csv" 1
+	TEXMOT	FACE_DO_REV_CLOSE_IN	"pc01_face_do_r_close.csv" 0
+	TEXMOT	FACE_DO_REV_CLOSE_IN	"pc01_face_do_l_close.csv" 1
+	TEXMOT	FACE_DO_REV_CLOSE_OUT	"pc01_face_do_r_open.csv" 0
+	TEXMOT	FACE_DO_REV_CLOSE_OUT	"pc01_face_do_l_open.csv" 1
+	TEXMOT	FACE_DO_IN		"pc01_face_do_l_in.csv" 0
+	TEXMOT	FACE_DO_IN		"pc01_face_do_r_in.csv" 1
+	TEXMOT	FACE_DO_OUT		"pc01_face_do_l_out.csv" 0
+	TEXMOT	FACE_DO_OUT		"pc01_face_do_r_out.csv" 1
+	TEXMOT	FACE_OD_BLINK		"pc01_face_od_blink.csv" 0
+	TEXMOT	FACE_OD_BLINK		"pc01_face_od_blink.csv" 1
+	TEXMOT	FACE_OD_CLOSE		"pc01_face_od_close2.csv" 0
+	TEXMOT	FACE_OD_CLOSE		"pc01_face_od_close2.csv" 1
+	TEXMOT	FACE_OD_CLOSE_IN	"pc01_face_od_close.csv" 0
+	TEXMOT	FACE_OD_CLOSE_IN	"pc01_face_od_close.csv" 1
+	TEXMOT	FACE_OD_CLOSE_OUT	"pc01_face_od_open.csv" 0
+	TEXMOT	FACE_OD_CLOSE_OUT	"pc01_face_od_open.csv" 1
+	TEXMOT	FACE_AI_BLINK		"pc01_face_ai_blink.csv" 0
+	TEXMOT	FACE_AI_BLINK		"pc01_face_ai_blink.csv" 1
+	TEXMOT	FACE_AI_CLOSE		"pc01_face_ai_close2.csv" 0
+	TEXMOT	FACE_AI_CLOSE		"pc01_face_ai_close2.csv" 1
+	TEXMOT	FACE_AI_CLOSE_IN	"pc01_face_ai_close.csv" 0
+	TEXMOT	FACE_AI_CLOSE_IN	"pc01_face_ai_close.csv" 1
+	TEXMOT	FACE_AI_CLOSE_OUT	"pc01_face_ai_open.csv" 0
+	TEXMOT	FACE_AI_CLOSE_OUT	"pc01_face_ai_open.csv" 1
+	TEXMOT	FACE_KU_CLOSE		"pc01_face_ku_l_close2.csv" 0
+	TEXMOT	FACE_KU_CLOSE		"pc01_face_ku_r_close2.csv" 1
+	TEXMOT	FACE_KU_CLOSE_IN	"pc01_face_ku_l_close.csv" 0
+	TEXMOT	FACE_KU_CLOSE_IN	"pc01_face_ku_r_close.csv" 1
+	TEXMOT	FACE_KU_CLOSE_OUT	"pc01_face_ku_l_open.csv" 0
+	TEXMOT	FACE_KU_CLOSE_OUT	"pc01_face_ku_r_open.csv" 1
+	TEXMOT	FACE_KU_REV_CLOSE	"pc01_face_ku_r_close2.csv" 0
+	TEXMOT	FACE_KU_REV_CLOSE	"pc01_face_ku_l_close2.csv" 1
+	TEXMOT	FACE_KU_REV_CLOSE_IN	"pc01_face_ku_r_close.csv" 0
+	TEXMOT	FACE_KU_REV_CLOSE_IN	"pc01_face_ku_l_close.csv" 1
+	TEXMOT	FACE_KU_REV_CLOSE_OUT	"pc01_face_ku_r_open.csv" 0
+	TEXMOT	FACE_KU_REV_CLOSE_OUT	"pc01_face_ku_l_open.csv" 1
+	TEXMOT	FACE_NK_CLOSE		"pc01_face_nk_close2.csv" 0
+	TEXMOT	FACE_NK_CLOSE		"pc01_face_nk_close2.csv" 1
+	TEXMOT	FACE_NK_CLOSE_IN	"pc01_face_nk_close.csv" 0
+	TEXMOT	FACE_NK_CLOSE_IN	"pc01_face_nk_close.csv" 1
+	TEXMOT	FACE_NK_CLOSE_OUT	"pc01_face_nk_open.csv" 0
+	TEXMOT	FACE_NK_CLOSE_OUT	"pc01_face_nk_open.csv" 1
+	TEXMOT	FACE_AK_CLOSE		"pc01_face_ak_close2.csv" 0
+	TEXMOT	FACE_AK_CLOSE		"pc01_face_ak_close2.csv" 1
+	TEXMOT	FACE_AK_CLOSE_IN	"pc01_face_ak_close.csv" 0
+	TEXMOT	FACE_AK_CLOSE_IN	"pc01_face_ak_close.csv" 1
+	TEXMOT	FACE_AK_CLOSE_OUT	"pc01_face_ak_open.csv" 0
+	TEXMOT	FACE_AK_CLOSE_OUT	"pc01_face_ak_open.csv" 1
+	TEXMOT	FACE_SL_BLINK		"pc01_face_sl_blink.csv" 0
+	TEXMOT	FACE_SL_BLINK		"pc01_face_sl_blink.csv" 1
+	TEXMOT	FACE_SL_CLOSE		"pc01_face_nm_close2.csv" 0
+	TEXMOT	FACE_SL_CLOSE		"pc01_face_nm_close2.csv" 1
+	TEXMOT	FACE_SL_CLOSE_IN	"pc01_face_sl_close.csv" 0
+	TEXMOT	FACE_SL_CLOSE_IN	"pc01_face_sl_close.csv" 1
+	TEXMOT	FACE_SL_CLOSE_OUT	"pc01_face_sl_open.csv" 0
+	TEXMOT	FACE_SL_CLOSE_OUT	"pc01_face_sl_open.csv" 1
+	TEXMOT	FACE_SD_BLINK		"pc01_face_sd_l_blink.csv" 0
+	TEXMOT	FACE_SD_BLINK		"pc01_face_sd_r_blink.csv" 1
+	TEXMOT	FACE_SD_CLOSE		"pc01_face_do_l_close2.csv" 0
+	TEXMOT	FACE_SD_CLOSE		"pc01_face_do_r_close2.csv" 1
+	TEXMOT	FACE_SD_CLOSE_IN	"pc01_face_sd_l_close.csv" 0
+	TEXMOT	FACE_SD_CLOSE_IN	"pc01_face_sd_r_close.csv" 1
+	TEXMOT	FACE_SD_CLOSE_OUT	"pc01_face_sd_l_open.csv" 0
+	TEXMOT	FACE_SD_CLOSE_OUT	"pc01_face_sd_r_open.csv" 1
+	TEXMOT	FACE_SD_REV_BLINK		"pc01_face_sd_r_blink.csv" 0
+	TEXMOT	FACE_SD_REV_BLINK		"pc01_face_sd_l_blink.csv" 1
+	TEXMOT	FACE_SD_REV_CLOSE		"pc01_face_do_r_close2.csv" 0
+	TEXMOT	FACE_SD_REV_CLOSE		"pc01_face_do_l_close2.csv" 1
+	TEXMOT	FACE_SD_REV_CLOSE_IN	"pc01_face_sd_r_close.csv" 0
+	TEXMOT	FACE_SD_REV_CLOSE_IN	"pc01_face_sd_l_close.csv" 1
+	TEXMOT	FACE_SD_REV_CLOSE_OUT	"pc01_face_sd_r_open.csv" 0
+	TEXMOT	FACE_SD_REV_CLOSE_OUT	"pc01_face_sd_l_open.csv" 1
+
+
+//	p-bone(S) ブーツのひらひら
+CLOTH T_CLOTH_S {
+	BONE {
+		NODE "boots_l_fx"
+		NODE "boots_r_fx"
+	}
+}
+
+/	p-bone(M) パンツのスソ
+//CLOTH T_CLOTH_S {
+	BONE {
+		NODE "pants_l_fx"
+		NODE "pants_r_fx"
+	}
+}
+
+//	p-bone(M) 髪の毛
+CLOTH T_HAIR_S {
+	BONE {
+		NODE "hair_ra"
+		NODE "hair_rb"
+		NODE "hair_rc"
+		NODE "hair_rd"
+		NODE "hair_re"
+		NODE "hair_rf"
+		NODE "hair_rg"
+		NODE "hair_rh"
+		NODE "hair_la"
+		NODE "hair_lb"
+		NODE "hair_lc"
+		NODE "hair_ld"
+		NODE "hair_le"
+		NODE "hair_lf"
+		NODE "hair_lg"
+		NODE "hair_b"
+	}
+}
+
+//	p-bone(L) 腰の布
+CLOTH T_CLOTH_L {
+	BONE {
+		NODE "cloth_f"
+		NODE "cloth_b"
+	}
+	COLLI {
+		CYL "rightupleg" -0.671,0.087,0.042, 90.270,-78.312,179.308, 0.800,2.706,0.800	// PBcylShape2
+	}
+	COLLISIZE 1.4				// コリジョン半径40%増しで
+	IGNOREMOTCHECK				// モーションチェックを無視
+}
+
