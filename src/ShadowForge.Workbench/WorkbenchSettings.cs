@@ -42,6 +42,11 @@ public sealed class WorkbenchSettings
     /// The mod that Build compiles scene scripts into, and whether it enables that mod.
     /// </summary>
     public string ScriptModName { get; set; } = "scene_edits";
+
+    /// <summary>
+    /// The mod name Deploy edit as mod last used, offered again next time.
+    /// </summary>
+    public string? LastDeployMod { get; set; }
     public bool ScriptEnableOnBuild { get; set; } = true;
 
     /// <summary>

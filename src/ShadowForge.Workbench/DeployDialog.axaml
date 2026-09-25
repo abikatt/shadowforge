@@ -1,0 +1,42 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ShadowForge.Workbench.DeployDialog"
+        Title="Deploy edit as mod"
+        Width="520" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="20" Spacing="12">
+    <TextBlock x:Name="IntroText" TextWrapping="Wrap" />
+    <StackPanel Spacing="4">
+      <TextBlock Text="Edited model" FontWeight="SemiBold" />
+      <DockPanel>
+        <Button x:Name="BrowseButton" DockPanel.Dock="Right" Content="Browse…" Margin="8,0,0,0" />
+        <TextBox x:Name="ModelBox" PlaceholderText="The .glb or .gltf you edited" />
+      </DockPanel>
+      <TextBlock x:Name="ModelHint" FontSize="12" TextWrapping="Wrap" Opacity="0.7" />
+    </StackPanel>
+    <StackPanel Spacing="4">
+      <TextBlock Text="Mod name" FontWeight="SemiBold" />
+      <TextBox x:Name="NameBox" />
+      <TextBlock x:Name="ValidationText" FontSize="12" TextWrapping="Wrap" Opacity="0.8" />
+    </StackPanel>
+    <Grid ColumnDefinitions="*,8,120">
+      <StackPanel Spacing="4">
+        <TextBlock Text="Author (optional)" FontWeight="SemiBold" />
+        <TextBox x:Name="AuthorBox" />
+      </StackPanel>
+      <StackPanel Grid.Column="2" Spacing="4">
+        <TextBlock Text="Version" FontWeight="SemiBold" />
+        <TextBox x:Name="VersionBox" PlaceholderText="1.0" />
+      </StackPanel>
+    </Grid>
+    <StackPanel Spacing="4">
+      <TextBlock Text="Description (optional)" FontWeight="SemiBold" />
+      <TextBox x:Name="DescriptionBox" />
+    </StackPanel>
+    <CheckBox x:Name="EnableBox" Content="Enable the mod after deploying" IsChecked="True" />
+    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+      <Button x:Name="CancelButton" Content="Cancel" IsCancel="True" />
+      <Button x:Name="DeployButton" Content="Deploy" IsDefault="True" IsEnabled="False" Classes="accent" />
+    </StackPanel>
+  </StackPanel>
+</Window>

@@ -123,6 +123,7 @@ public partial class MainWindow : Window
         };
         SetUpSettings();
         SetUpScripts();
+        SetUpDeploy();
         Opened += (_, _) => Load(_settings.GameRoot, remember: false, fallBackToDetect: true);
     }
 

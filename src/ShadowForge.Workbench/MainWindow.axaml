@@ -85,6 +85,9 @@
                     <Button x:Name="DeriveButton" Grid.Column="2" Content="Derive new…"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
                   </Grid>
+                  <Button x:Name="DeployEditButton" Content="Deploy edit as mod…" Margin="0,-4,0,0"
+                          HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                          ToolTip.Tip="Cook an edited .glb of this character back into game files and write them as a mod" />
                   <TextBlock Text="Files" FontWeight="SemiBold" Margin="0,6,0,0" />
                 </StackPanel>
                 <ScrollViewer>
@@ -234,6 +237,8 @@
           <Grid x:Name="ModsContent" RowDefinitions="Auto,*" ColumnDefinitions="*,12,520">
             <DockPanel Grid.ColumnSpan="3" Margin="0,0,0,8">
               <Button x:Name="AddModButton" DockPanel.Dock="Right" Content="Add mod folder…" />
+              <Button x:Name="BuildModButton" DockPanel.Dock="Right" Content="Build mod from source…" Margin="0,0,8,0"
+                      ToolTip.Tip="Build a mod from a source folder: a mod .toml plus entities\&lt;id&gt;\entity.toml" />
               <Button x:Name="OpenModsFolderButton" DockPanel.Dock="Right" Content="Open mods folder"
                       Margin="0,0,8,0" />
               <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
