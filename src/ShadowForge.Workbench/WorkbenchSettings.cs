@@ -21,6 +21,12 @@ public sealed class WorkbenchSettings
     public string DerivedRoot { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "entities");
 
+    /// <summary>
+    /// Where exported map stages are written, one folder per stage id.
+    /// </summary>
+    public string MapExportRoot { get; set; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "maps");
+
     public static WorkbenchSettings Load()
     {
         try

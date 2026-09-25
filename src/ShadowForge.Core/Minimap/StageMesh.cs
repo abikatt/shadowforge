@@ -1,3 +1,5 @@
+using ShadowForge.Formats.HDB;
+
 namespace ShadowForge.Minimap;
 
 /// <summary>
@@ -15,4 +17,10 @@ public sealed class StageMesh
     /// .map declares none.
     /// </summary>
     public required IReadOnlyList<Tri> Collision { get; init; }
+
+    /// <summary>
+    /// The render triangles as a <see cref="PreviewMesh"/> for <see cref="PreviewRenderer.RenderInto"/>.
+    /// </summary>
+    public PreviewMesh ToPreviewMesh() =>
+        new(Render.Select(t => new PreviewRenderer.Triangle(t.A, t.B, t.C)).ToList());
 }

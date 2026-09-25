@@ -4,16 +4,20 @@ using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using ShadowForge.Formats.HDB;
+using ShadowForge.Formats.MAP;
 using ShadowForge.GameData;
 using ShadowForge.GameData.Entities;
 using ShadowForge.GameData.Maps;
 using ShadowForge.GameData.Mods;
+using ShadowForge.Minimap;
 
 namespace ShadowForge.Workbench;
 
 public sealed record CharacterRow(string Id, string DisplayName, string Category, string ModelDef);
 
-public sealed record MapRow(string Id, string Region, string Category, string Detail);
+public sealed record MapRow(string Id, string Region, string Category, string Detail, bool RegionAvailable);
+
+public sealed record StageEntryRow(string Kind, string Name, string Path);
 
 public sealed record ModRow(string Name, bool Enabled);
 
@@ -30,7 +34,13 @@ public partial class MainWindow : Window
     private IReadOnlyList<CharacterRow> _characters = [];
     private IReadOnlyList<MapRow> _maps = [];
     private CharacterRow? _selected;
+    private MapRow? _selectedMap;
     private string? _statusFolder;
+
+    /// <summary>
+    /// Looks down on a stage from above; a negative pitch puts the camera above the model.
+    /// </summary>
+    private static readonly PreviewCamera StageCamera = PreviewCamera.Default with { PitchDeg = -45f };
 
     public MainWindow()
     {
@@ -40,6 +50,10 @@ public partial class MainWindow : Window
         CharacterList.SelectionChanged += (_, _) => ShowDetails(CharacterList.SelectedItem as CharacterRow);
         OpenInBlenderButton.Click += OnOpenInBlender;
         DeriveButton.Click += OnDerive;
+        MapPreview.HomeCamera = StageCamera;
+        MapList.SelectionChanged += (_, _) => ShowMapDetails(MapList.SelectedItem as MapRow);
+        OpenMapInBlenderButton.Click += OnOpenMapInBlender;
+        ExportMapButton.Click += OnExportMap;
         ShowFolderButton.Click += (_, _) =>
         {
             if (_statusFolder is not null) Process.Start("explorer.exe", _statusFolder);
@@ -71,7 +85,7 @@ public partial class MainWindow : Window
                 var mapResult = new MapCatalog(install).List();
                 var maps = mapResult.Stages
                     .Select(m => new MapRow(m.StageId, m.RegionIPK, m.Category,
-                        m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing"))
+                        m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing", m.RegionAvailable))
                     .ToList();
                 var mods = install.ModsRoot is null
                     ? []
@@ -185,10 +199,124 @@ public partial class MainWindow : Window
             if (ReferenceEquals(_selected, row)) update();
         });
 
-    private async void OnOpenInBlender(object? sender, RoutedEventArgs e)
-    {
-        if (_selected is not { } row || _install is not { } install) return;
+    private void Post(MapRow row, Action update) =>
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (ReferenceEquals(_selectedMap, row)) update();
+        });
 
+    /// <summary>
+    /// Lists the stage def's entries at once, then assembles every placed model on a worker
+    /// thread for the preview. Sky, water and light rigs are left out by the assembler, so the
+    /// view frames the walkable stage rather than the skydome.
+    /// </summary>
+    private void ShowMapDetails(MapRow? row)
+    {
+        _selectedMap = row;
+        NoMapText.IsVisible = row is null;
+        MapDetailsPanel.IsVisible = row is not null;
+        if (row is null || _install is not { } install) return;
+
+        MapDetailId.Text = row.Id;
+        MapDetailInfo.Text = $"{row.Category} · region {row.Region}"
+            + (row.RegionAvailable ? "" : " (missing)");
+        OpenMapInBlenderButton.IsEnabled = row.RegionAvailable;
+        ExportMapButton.IsEnabled = row.RegionAvailable;
+        StageEntryList.ItemsSource = null;
+        MapPreview.Mesh = null;
+        MapPreviewHint.IsVisible = false;
+        MapPreviewText.Text = row.RegionAvailable ? "Assembling stage…" : "Region pack missing, nothing to preview.";
+
+        Task.Run(() =>
+        {
+            var files = new GameFileSystem(install);
+            try
+            {
+                var map = StageDef.Read(files.ReadMapDef(row.Id));
+                var entries = map.Models
+                    .Select(m => new StageEntryRow("MODEL", $"{m.Name} · area {m.Area}", m.ObjectHDB ?? "(no OBJECT)"))
+                    .Concat(map.Parts.Select(p => new StageEntryRow("PART", p.Kind, p.Path)))
+                    .ToList();
+                Post(row, () => StageEntryList.ItemsSource = entries);
+            }
+            catch (Exception ex)
+            {
+                Post(row, () =>
+                {
+                    MapDetailInfo.Text = "Could not read stage def: " + ex.Message;
+                    MapPreviewText.Text = "";
+                });
+                return;
+            }
+            if (!row.RegionAvailable) return;
+
+            try
+            {
+                var mesh = MapAssembler.AssembleStage(files, row.Id).ToPreviewMesh();
+                Post(row, () =>
+                {
+                    if (mesh.TriangleCount == 0)
+                    {
+                        MapPreviewText.Text = "No stage geometry to preview.";
+                        return;
+                    }
+                    MapPreview.Mesh = mesh;
+                    MapPreviewHint.IsVisible = true;
+                    MapPreviewText.Text = "";
+                });
+            }
+            catch (Exception ex)
+            {
+                Post(row, () => MapPreviewText.Text = "Preview failed: " + ex.Message);
+            }
+        });
+    }
+
+    private async void OnOpenMapInBlender(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedMap is not { } row || _install is not { } install) return;
+        if (await LocateBlenderAsync() is not { } blender) return;
+
+        try
+        {
+            BlenderLauncher.OpenMap(blender, row.Id, install.GameDataRoot);
+            SetStatus($"Opening {row.Id} in Blender…");
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Could not start Blender: " + ex.Message);
+        }
+    }
+
+    private async void OnExportMap(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedMap is not { } row || _install is not { } install) return;
+
+        string outDir = Path.Combine(_settings.MapExportRoot, row.Id);
+        SetStatus($"Exporting {row.Id}…");
+        ExportMapButton.IsEnabled = false;
+        try
+        {
+            var result = await Task.Run(() => new MapExporter(install).Export(row.Id, outDir,
+                progress: line => Dispatcher.UIThread.Post(() => SetStatus($"Exporting {row.Id}: {line}"))));
+            string warnings = result.Warnings.Count > 0 ? $" ({result.Warnings.Count} warnings)" : "";
+            SetStatus($"Exported {row.Id} to {result.GlbPath}{warnings}", outDir);
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Export failed: {ex.Message}");
+        }
+        finally
+        {
+            ExportMapButton.IsEnabled = _selectedMap?.RegionAvailable ?? false;
+        }
+    }
+
+    /// <summary>
+    /// The saved or discovered blender.exe, else one the user picks. A new choice is saved.
+    /// </summary>
+    private async Task<string?> LocateBlenderAsync()
+    {
         string? blender = BlenderLauncher.Find(_settings.BlenderPath);
         if (blender is null)
         {
@@ -198,13 +326,20 @@ public partial class MainWindow : Window
                 FileTypeFilter = [new FilePickerFileType("Blender") { Patterns = ["blender.exe"] }],
             });
             blender = picked is [var file, ..] ? file.TryGetLocalPath() : null;
-            if (blender is null) return;
+            if (blender is null) return null;
         }
         if (_settings.BlenderPath != blender)
         {
             _settings.BlenderPath = blender;
             _settings.Save();
         }
+        return blender;
+    }
+
+    private async void OnOpenInBlender(object? sender, RoutedEventArgs e)
+    {
+        if (_selected is not { } row || _install is not { } install) return;
+        if (await LocateBlenderAsync() is not { } blender) return;
 
         try
         {

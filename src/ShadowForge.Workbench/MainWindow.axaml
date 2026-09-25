@@ -94,20 +94,72 @@
       </TabItem>
 
       <TabItem Header="Maps">
-        <ListBox x:Name="MapList">
-          <ListBox.ItemTemplate>
-            <DataTemplate x:DataType="local:MapRow">
-              <Grid ColumnDefinitions="120,*,Auto">
-                <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
-                <StackPanel Grid.Column="1">
-                  <TextBlock Text="{Binding Region}" />
-                  <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" />
+        <Grid ColumnDefinitions="*,12,360">
+          <ListBox x:Name="MapList">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="local:MapRow">
+                <Grid ColumnDefinitions="120,*,Auto">
+                  <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding Region}" />
+                    <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" />
+                  </StackPanel>
+                  <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Category}" FontSize="11" /></Border>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <Border Grid.Column="2" Classes="panel">
+            <Panel>
+              <TextBlock x:Name="NoMapText" Text="Select a stage to see its contents and preview."
+                         HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6"
+                         TextWrapping="Wrap" TextAlignment="Center" Margin="24" />
+              <DockPanel x:Name="MapDetailsPanel" IsVisible="False">
+                <StackPanel DockPanel.Dock="Top" Spacing="10">
+                  <Border CornerRadius="6" ClipToBounds="True" Height="300" Background="#2A2A2C">
+                    <Panel>
+                      <local:ModelPreview x:Name="MapPreview" />
+                      <TextBlock x:Name="MapPreviewText" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Opacity="0.6" TextWrapping="Wrap" TextAlignment="Center" Margin="16"
+                                 IsHitTestVisible="False" />
+                    </Panel>
+                  </Border>
+                  <TextBlock x:Name="MapPreviewHint" HorizontalAlignment="Center" Margin="0,-4,0,0"
+                             FontSize="11" Opacity="0.45"
+                             Text="Drag rotate · Right-drag pan · Scroll zoom · Double-click reset" />
+                  <StackPanel Spacing="2">
+                    <TextBlock x:Name="MapDetailId" FontSize="20" FontWeight="SemiBold" FontFamily="Consolas,monospace" />
+                    <TextBlock x:Name="MapDetailInfo" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <Grid ColumnDefinitions="*,8,*">
+                    <Button x:Name="OpenMapInBlenderButton" Content="Open in Blender" Classes="accent"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                    <Button x:Name="ExportMapButton" Grid.Column="2" Content="Export glTF"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                  </Grid>
+                  <TextBlock Text="Contents" FontWeight="SemiBold" Margin="0,6,0,0" />
                 </StackPanel>
-                <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Category}" FontSize="11" /></Border>
-              </Grid>
-            </DataTemplate>
-          </ListBox.ItemTemplate>
-        </ListBox>
+                <ScrollViewer>
+                  <ItemsControl x:Name="StageEntryList">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="local:StageEntryRow">
+                        <StackPanel Margin="0,0,0,8">
+                          <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding Kind}" FontSize="12" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Name}" FontSize="12" Opacity="0.75" />
+                          </StackPanel>
+                          <TextBlock Text="{Binding Path}" FontSize="11" FontFamily="Consolas,monospace"
+                                     TextWrapping="Wrap" Opacity="0.75" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </DockPanel>
+            </Panel>
+          </Border>
+        </Grid>
       </TabItem>
 
       <TabItem Header="Mods">

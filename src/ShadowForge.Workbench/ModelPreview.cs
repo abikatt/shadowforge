@@ -18,11 +18,9 @@ namespace ShadowForge.Workbench;
 /// </summary>
 public sealed class ModelPreview : Control
 {
-    private static readonly PreviewCamera DefaultCamera = PreviewCamera.Default;
-
     private readonly object _gate = new();
     private PreviewMesh? _mesh;
-    private PreviewCamera _camera = DefaultCamera;
+    private PreviewCamera _camera = PreviewCamera.Default;
     private PixelSize _size;
     private bool _dirty;
     private bool _rendering;
@@ -38,6 +36,11 @@ public sealed class ModelPreview : Control
         Cursor = new Cursor(StandardCursorType.SizeAll);
     }
 
+    /// <summary>
+    /// The camera a new mesh starts from and a double-click returns to.
+    /// </summary>
+    public PreviewCamera HomeCamera { get; set; } = PreviewCamera.Default;
+
     public PreviewMesh? Mesh
     {
         get => _mesh;
@@ -46,7 +49,7 @@ public sealed class ModelPreview : Control
             lock (_gate)
             {
                 _mesh = value;
-                _camera = DefaultCamera;
+                _camera = HomeCamera;
             }
             if (value is null)
             {
@@ -79,7 +82,7 @@ public sealed class ModelPreview : Control
         var point = e.GetCurrentPoint(this);
         if (e.ClickCount == 2 && point.Properties.IsLeftButtonPressed)
         {
-            UpdateCamera(_ => DefaultCamera);
+            UpdateCamera(_ => HomeCamera);
             return;
         }
         _dragStart = point.Position;
