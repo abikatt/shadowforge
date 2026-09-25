@@ -124,6 +124,7 @@ public partial class MainWindow : Window
         SetUpSettings();
         SetUpScripts();
         SetUpDeploy();
+        SetUpTextures();
         Opened += (_, _) => Load(_settings.GameRoot, remember: false, fallBackToDetect: true);
     }
 

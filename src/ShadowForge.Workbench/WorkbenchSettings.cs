@@ -47,6 +47,17 @@ public sealed class WorkbenchSettings
     /// The mod name Deploy edit as mod last used, offered again next time.
     /// </summary>
     public string? LastDeployMod { get; set; }
+
+    /// <summary>
+    /// Where Export textures saves each character's textures as PNGs, one folder per id.
+    /// </summary>
+    public string TextureWorkRoot { get; set; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "textures");
+
+    /// <summary>
+    /// The mod name Deploy textures as mod last used, offered again next time.
+    /// </summary>
+    public string? LastTextureMod { get; set; }
     public bool ScriptEnableOnBuild { get; set; } = true;
 
     /// <summary>

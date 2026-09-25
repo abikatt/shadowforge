@@ -102,6 +102,15 @@ public partial class MainWindow
             }
         };
         SettingsOpenScriptsButton.Click += (_, _) => OpenFolder(_settings.ScriptWorkRoot);
+        SettingsBrowseTexturesButton.Click += async (_, _) =>
+        {
+            if (await PickFolder("Choose where exported textures go") is { } path)
+            {
+                _settings.TextureWorkRoot = path;
+                SaveSettings();
+            }
+        };
+        SettingsOpenTexturesButton.Click += (_, _) => OpenFolder(_settings.TextureWorkRoot);
 
         SettingsExportTextures.IsCheckedChanged += (_, _) =>
         {
@@ -132,6 +141,7 @@ public partial class MainWindow
         SettingsDerivedRoot.Text = _settings.DerivedRoot;
         SettingsMapExportRoot.Text = _settings.MapExportRoot;
         SettingsScriptRoot.Text = _settings.ScriptWorkRoot;
+        SettingsTextureRoot.Text = _settings.TextureWorkRoot;
         SettingsExportTextures.IsChecked = _settings.ExportTextures;
         SettingsTextureQualityBox.SelectedItem =
             TextureQualities.FirstOrDefault(q => q.MaxSize == _settings.PreviewTextureSize) ?? TextureQualities[1];

@@ -88,6 +88,16 @@
                   <Button x:Name="DeployEditButton" Content="Deploy edit as mod…" Margin="0,-4,0,0"
                           HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
                           ToolTip.Tip="Cook an edited .glb of this character back into game files and write them as a mod" />
+                  <Grid ColumnDefinitions="*,8,Auto,8,*" Margin="0,-4,0,0">
+                    <Button x:Name="ExportTexturesButton" Content="Export textures"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            ToolTip.Tip="Save this character's textures as PNGs in your textures folder, keeping any already there" />
+                    <Button x:Name="OpenTexturesButton" Grid.Column="2" Content="Open folder"
+                            ToolTip.Tip="Open this character's folder of exported textures" />
+                    <Button x:Name="DeployTexturesButton" Grid.Column="4" Content="Deploy textures as mod…"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center"
+                            ToolTip.Tip="Convert the PNGs you changed back into textures and write them as a mod" />
+                  </Grid>
                   <TextBlock Text="Files" FontWeight="SemiBold" Margin="0,6,0,0" />
                 </StackPanel>
                 <ScrollViewer>
@@ -379,6 +389,18 @@
                     <Button x:Name="SettingsOpenScriptsButton" Content="Open" />
                   </StackPanel>
                   <TextBox x:Name="SettingsScriptRoot" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Textures" />
+                <TextBlock Classes="settingHelp"
+                           Text="Export textures saves each character's textures here as PNGs, one folder per character, for editing." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseTexturesButton" Content="Browse…" />
+                    <Button x:Name="SettingsOpenTexturesButton" Content="Open" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsTextureRoot" IsReadOnly="True" />
                 </DockPanel>
               </StackPanel>
               <CheckBox x:Name="SettingsExportTextures" Content="Include textures in map exports" />

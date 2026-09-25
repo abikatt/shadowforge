@@ -6,7 +6,7 @@
         WindowStartupLocation="CenterOwner">
   <StackPanel Margin="20" Spacing="12">
     <TextBlock x:Name="IntroText" TextWrapping="Wrap" />
-    <StackPanel Spacing="4">
+    <StackPanel x:Name="ModelSection" Spacing="4">
       <TextBlock Text="Edited model" FontWeight="SemiBold" />
       <DockPanel>
         <Button x:Name="BrowseButton" DockPanel.Dock="Right" Content="Browse…" Margin="8,0,0,0" />
