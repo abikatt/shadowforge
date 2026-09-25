@@ -22,6 +22,21 @@ public sealed class WorkbenchSettings
     public PreviewShading PreviewShading { get; set; } = PreviewShading.Flat;
 
     /// <summary>
+    /// The Characters list's sort label and filters. A null class shows every class.
+    /// </summary>
+    public string? CharacterSort { get; set; }
+    public string? CharacterClass { get; set; }
+    public bool CharacterNamedOnly { get; set; }
+
+    /// <summary>
+    /// The Maps list's sort label and filters. A null category shows every category.
+    /// </summary>
+    public string? MapSort { get; set; }
+    public string? MapCategory { get; set; }
+    public bool MapNamedOnly { get; set; }
+    public bool MapAvailableOnly { get; set; }
+
+    /// <summary>
     /// Where derived entities are written, one folder per new id.
     /// </summary>
     public string DerivedRoot { get; set; } = Path.Combine(

@@ -27,20 +27,33 @@
     <TabControl x:Name="Tabs" TabStripPlacement="Left" Padding="12">
       <TabItem Header="Characters">
         <Grid ColumnDefinitions="*,12,520">
-          <ListBox x:Name="CharacterList">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="local:CharacterRow">
-                <Grid ColumnDefinitions="100,*,Auto">
-                  <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
-                  <StackPanel Grid.Column="1">
-                    <TextBlock Text="{Binding DisplayName}" />
-                    <TextBlock Text="{Binding ModelDef}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
-                  </StackPanel>
-                  <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Category}" FontSize="11" /></Border>
-                </Grid>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+          <DockPanel>
+            <DockPanel DockPanel.Dock="Top" Classes="listTools">
+              <TextBlock x:Name="CharacterCount" DockPanel.Dock="Right" Classes="listCount" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Sort" Classes="toolLabel" />
+                <ComboBox x:Name="CharacterSortBox" MinWidth="130" />
+                <TextBlock Text="Class" Classes="toolLabel" Margin="8,0,0,0" />
+                <ComboBox x:Name="CharacterClassBox" MinWidth="130" />
+                <CheckBox x:Name="CharacterNamedOnly" Content="Named only" Margin="8,0,0,0"
+                          ToolTip.Tip="Hide ids the game gives no name" />
+              </StackPanel>
+            </DockPanel>
+            <ListBox x:Name="CharacterList">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:CharacterRow">
+                  <Grid ColumnDefinitions="100,*,Auto">
+                    <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1">
+                      <TextBlock Text="{Binding DisplayName}" />
+                      <TextBlock Text="{Binding ModelDef}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Class}" FontSize="11" /></Border>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
 
           <Border Grid.Column="2" Classes="panel">
             <Panel>
@@ -98,20 +111,35 @@
 
       <TabItem Header="Maps">
         <Grid ColumnDefinitions="*,12,520">
-          <ListBox x:Name="MapList">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="local:MapRow">
-                <Grid ColumnDefinitions="120,*,Auto">
-                  <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
-                  <StackPanel Grid.Column="1">
-                    <TextBlock Text="{Binding Name}" />
-                    <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" />
-                  </StackPanel>
-                  <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Category}" FontSize="11" /></Border>
-                </Grid>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
+          <DockPanel>
+            <DockPanel DockPanel.Dock="Top" Classes="listTools">
+              <TextBlock x:Name="MapCount" DockPanel.Dock="Right" Classes="listCount" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Sort" Classes="toolLabel" />
+                <ComboBox x:Name="MapSortBox" MinWidth="130" />
+                <TextBlock Text="Category" Classes="toolLabel" Margin="8,0,0,0" />
+                <ComboBox x:Name="MapCategoryBox" MinWidth="130" />
+                <CheckBox x:Name="MapNamedOnly" Content="Named only" Margin="8,0,0,0"
+                          ToolTip.Tip="Hide stages the game gives no name" />
+                <CheckBox x:Name="MapAvailableOnly" Content="Available only"
+                          ToolTip.Tip="Hide stages whose region pack is missing" />
+              </StackPanel>
+            </DockPanel>
+            <ListBox x:Name="MapList">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:MapRow">
+                  <Grid ColumnDefinitions="120,*,Auto">
+                    <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
+                    <StackPanel Grid.Column="1">
+                      <TextBlock Text="{Binding Name}" />
+                      <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Category}" FontSize="11" /></Border>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
 
           <Border Grid.Column="2" Classes="panel">
             <Panel>
@@ -248,6 +276,19 @@
       <Setter Property="CornerRadius" Value="4" />
       <Setter Property="Padding" Value="6,2" />
       <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="DockPanel.listTools">
+      <Setter Property="Margin" Value="0,0,0,8" />
+    </Style>
+    <Style Selector="TextBlock.toolLabel">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Opacity" Value="0.7" />
+    </Style>
+    <Style Selector="TextBlock.listCount">
+      <Setter Property="VerticalAlignment" Value="Center" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Opacity" Value="0.6" />
     </Style>
     <Style Selector="ComboBox.shading">
       <Setter Property="HorizontalAlignment" Value="Left" />

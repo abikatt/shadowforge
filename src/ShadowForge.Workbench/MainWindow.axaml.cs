@@ -14,9 +14,16 @@ using ShadowForge.Minimap;
 
 namespace ShadowForge.Workbench;
 
-public sealed record CharacterRow(string Id, string DisplayName, string Category, string ModelDef);
+public sealed record CharacterRow(string Id, string DisplayName, string Class, string ModelDef)
+{
+    public bool IsNamed => DisplayName != Id;
+}
 
-public sealed record MapRow(string Id, string Name, string Region, string Category, string Detail, bool RegionAvailable);
+public sealed record MapRow(
+    string Id, string Name, string Region, string Category, string Detail, bool RegionAvailable, int ModelCount)
+{
+    public bool IsNamed => Name != Id;
+}
 
 public sealed record StageEntryRow(string Kind, string Name, string Path);
 
@@ -45,6 +52,8 @@ public partial class MainWindow : Window
     private string? _statusFolder;
     private PreviewMesh? _characterTexturesFor;
     private PreviewMesh? _mapTexturesFor;
+    private bool _refreshingList;
+    private bool _updatingListOptions;
 
     private static readonly ShadingOption[] ShadingOptions =
     [
@@ -66,7 +75,11 @@ public partial class MainWindow : Window
         InitializeComponent();
         ChooseRootButton.Click += OnChooseRoot;
         SearchBox.TextChanged += (_, _) => ApplyFilter();
-        CharacterList.SelectionChanged += (_, _) => ShowDetails(CharacterList.SelectedItem as CharacterRow);
+        CharacterList.SelectionChanged += (_, _) =>
+        {
+            if (!_refreshingList) ShowDetails(CharacterList.SelectedItem as CharacterRow);
+        };
+        SetUpListOptions();
         OpenInBlenderButton.Click += OnOpenInBlender;
         DeriveButton.Click += OnDerive;
         MapPreview.HomeCamera = StageCamera;
@@ -79,7 +92,10 @@ public partial class MainWindow : Window
         }
         Preview.Shading = MapPreview.Shading = initial.Value;
         TextureStatus.IsVisible = MapTextureStatus.IsVisible = initial.Value.NeedsTextures();
-        MapList.SelectionChanged += (_, _) => ShowMapDetails(MapList.SelectedItem as MapRow);
+        MapList.SelectionChanged += (_, _) =>
+        {
+            if (!_refreshingList) ShowMapDetails(MapList.SelectedItem as MapRow);
+        };
         OpenMapInBlenderButton.Click += OnOpenMapInBlender;
         ExportMapButton.Click += OnExportMap;
         ModList.SelectionChanged += (_, _) => ShowModDetails(ModList.SelectedItem as ModRow);
@@ -126,7 +142,7 @@ public partial class MainWindow : Window
                 var maps = mapResult.Stages
                     .Select(m => new MapRow(m.StageId, m.DisplayName, m.RegionIPK, m.Category,
                         $"{m.RegionIPK} · " + (m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing"),
-                        m.RegionAvailable))
+                        m.RegionAvailable, m.ModelCount))
                     .ToList();
                 var modCatalog = install.ModsRoot is null ? null : new ModCatalog(install);
                 var mods = modCatalog?.List() ?? [];
@@ -139,6 +155,8 @@ public partial class MainWindow : Window
                     _maps = maps;
                     _mods = mods;
                     ShowModCatalog(modCatalog);
+                    SetFilterChoices(CharacterClassBox, AllClasses, characters.Select(c => c.Class), _settings.CharacterClass);
+                    SetFilterChoices(MapCategoryBox, AllCategories, maps.Select(m => m.Category), _settings.MapCategory);
                     ApplyFilter();
                     string modCount = modCatalog is null ? "no mods folder" : $"{mods.Count} mods";
                     SetStatus($"{characters.Count} characters, {maps.Count} stages, {modCount}"
@@ -161,10 +179,108 @@ public partial class MainWindow : Window
         string q = SearchBox.Text?.Trim() ?? "";
         bool Match(params string[] fields) =>
             q.Length == 0 || fields.Any(f => f.Contains(q, StringComparison.OrdinalIgnoreCase));
+        bool Is(string value, string? filter) =>
+            filter is null || value.Equals(filter, StringComparison.OrdinalIgnoreCase);
 
-        CharacterList.ItemsSource = _characters.Where(c => Match(c.Id, c.DisplayName, c.Category)).ToList();
-        MapList.ItemsSource = _maps.Where(m => Match(m.Id, m.Name, m.Region, m.Category)).ToList();
+        string? cls = FilterValue(CharacterClassBox);
+        bool namedCharacters = CharacterNamedOnly.IsChecked == true;
+        var characterSort = CharacterSortBox.SelectedItem as SortOption<CharacterRow> ?? ListSorts.Characters[0];
+        var characters = characterSort.Apply(_characters
+            .Where(c => Match(c.Id, c.DisplayName, c.Class, c.ModelDef))
+            .Where(c => Is(c.Class, cls) && (!namedCharacters || c.IsNamed))).ToList();
+        ShowRows(CharacterList, characters, ShowDetails);
+        CharacterCount.Text = CountText(characters.Count, _characters.Count);
+
+        string? category = FilterValue(MapCategoryBox);
+        bool namedMaps = MapNamedOnly.IsChecked == true, availableMaps = MapAvailableOnly.IsChecked == true;
+        var mapSort = MapSortBox.SelectedItem as SortOption<MapRow> ?? ListSorts.Maps[0];
+        var maps = mapSort.Apply(_maps
+            .Where(m => Match(m.Id, m.Name, m.Region, m.Category))
+            .Where(m => Is(m.Category, category) && (!namedMaps || m.IsNamed) && (!availableMaps || m.RegionAvailable)))
+            .ToList();
+        ShowRows(MapList, maps, ShowMapDetails);
+        MapCount.Text = CountText(maps.Count, _maps.Count);
+
         FilterMods(null);
+    }
+
+    private const string AllClasses = "All classes";
+    private const string AllCategories = "All categories";
+
+    private static string CountText(int shown, int total) => shown == total ? $"{total}" : $"{shown} of {total}";
+
+    /// <summary>
+    /// The chosen filter value, or null for the leading "All …" entry.
+    /// </summary>
+    private static string? FilterValue(ComboBox box) => box.SelectedIndex > 0 ? box.SelectedItem as string : null;
+
+    /// <summary>
+    /// Fills a filter box with "All …" and the distinct non-empty values, selecting the saved
+    /// one when it is still offered.
+    /// </summary>
+    private void SetFilterChoices(ComboBox box, string all, IEnumerable<string> values, string? saved)
+    {
+        var items = new List<string> { all };
+        items.AddRange(values.Where(v => v.Length > 0).Distinct(StringComparer.OrdinalIgnoreCase)
+            .Order(StringComparer.OrdinalIgnoreCase));
+        _updatingListOptions = true;
+        box.ItemsSource = items;
+        box.SelectedItem = items.Skip(1).FirstOrDefault(i => i.Equals(saved, StringComparison.OrdinalIgnoreCase)) ?? all;
+        _updatingListOptions = false;
+    }
+
+    /// <summary>
+    /// Replaces a list's rows and keeps its selection when the selected row is still listed.
+    /// The details panel is only told when the selection really changed, so re-sorting never
+    /// reloads the preview.
+    /// </summary>
+    private void ShowRows<T>(ListBox list, List<T> rows, Action<T?> showDetails) where T : class
+    {
+        var kept = list.SelectedItem as T;
+        _refreshingList = true;
+        list.ItemsSource = rows;
+        if (kept is not null && rows.Contains(kept)) list.SelectedItem = kept;
+        _refreshingList = false;
+        if (!ReferenceEquals(list.SelectedItem, kept)) showDetails(list.SelectedItem as T);
+        else if (kept is not null) list.ScrollIntoView(kept);
+    }
+
+    /// <summary>
+    /// Saves the sort and filter controls and reapplies them.
+    /// </summary>
+    private void OnListOptionsChanged()
+    {
+        if (_updatingListOptions) return;
+        _settings.CharacterSort = (CharacterSortBox.SelectedItem as SortOption<CharacterRow>)?.Label;
+        _settings.CharacterClass = FilterValue(CharacterClassBox);
+        _settings.CharacterNamedOnly = CharacterNamedOnly.IsChecked == true;
+        _settings.MapSort = (MapSortBox.SelectedItem as SortOption<MapRow>)?.Label;
+        _settings.MapCategory = FilterValue(MapCategoryBox);
+        _settings.MapNamedOnly = MapNamedOnly.IsChecked == true;
+        _settings.MapAvailableOnly = MapAvailableOnly.IsChecked == true;
+        _settings.Save();
+        ApplyFilter();
+    }
+
+    private void SetUpListOptions()
+    {
+        _updatingListOptions = true;
+        CharacterSortBox.ItemsSource = ListSorts.Characters;
+        CharacterSortBox.SelectedItem = ListSorts.Characters.FirstOrDefault(s => s.Label == _settings.CharacterSort)
+            ?? ListSorts.Characters[0];
+        MapSortBox.ItemsSource = ListSorts.Maps;
+        MapSortBox.SelectedItem = ListSorts.Maps.FirstOrDefault(s => s.Label == _settings.MapSort) ?? ListSorts.Maps[0];
+        CharacterNamedOnly.IsChecked = _settings.CharacterNamedOnly;
+        MapNamedOnly.IsChecked = _settings.MapNamedOnly;
+        MapAvailableOnly.IsChecked = _settings.MapAvailableOnly;
+        SetFilterChoices(CharacterClassBox, AllClasses, [], null);
+        SetFilterChoices(MapCategoryBox, AllCategories, [], null);
+        _updatingListOptions = false;
+
+        foreach (var box in new[] { CharacterSortBox, CharacterClassBox, MapSortBox, MapCategoryBox })
+            box.SelectionChanged += (_, _) => OnListOptionsChanged();
+        foreach (var check in new[] { CharacterNamedOnly, MapNamedOnly, MapAvailableOnly })
+            check.IsCheckedChanged += (_, _) => OnListOptionsChanged();
     }
 
     /// <summary>
