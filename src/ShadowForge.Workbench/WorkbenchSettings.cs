@@ -14,7 +14,28 @@ public sealed class WorkbenchSettings
 
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
+    /// <summary>
+    /// The game-data folder to open, or null to detect it (SHADOWFORGE_GAME_ROOT, then the
+    /// reblue install).
+    /// </summary>
+    public string? GameRoot { get; set; }
+
+    /// <summary>
+    /// Which of the game's name tables labels characters and stages: "us", "de" or "es".
+    /// </summary>
+    public string NameLanguage { get; set; } = "us";
+
     public string? BlenderPath { get; set; }
+
+    /// <summary>
+    /// Whether map exports carry textures, or flat colours in their place.
+    /// </summary>
+    public bool ExportTextures { get; set; } = true;
+
+    /// <summary>
+    /// The longest side, in pixels, that preview textures are scaled down to. 0 keeps full size.
+    /// </summary>
+    public int PreviewTextureSize { get; set; } = 512;
 
     /// <summary>
     /// The shading both previews use, kept between runs.

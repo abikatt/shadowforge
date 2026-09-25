@@ -19,11 +19,12 @@ public sealed class EntityCatalog
     /// <summary>
     /// Deduplicated by id and sorted by id.
     /// </summary>
-    public IReadOnlyList<CatalogEntry> ListChara()
+    /// <param name="language">The name table to label entries from: "us", "de" or "es".</param>
+    public IReadOnlyList<CatalogEntry> ListChara(string language = "us")
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var list = new List<CatalogEntry>();
-        var names = NameTables.Load(_gfs);
+        var names = NameTables.Load(_gfs, language);
         foreach (string vfs in _gfs.EnumerateVfs(CharaModelDir, "model_*.mdl"))
         {
             string[] segs = vfs.Split('\\');

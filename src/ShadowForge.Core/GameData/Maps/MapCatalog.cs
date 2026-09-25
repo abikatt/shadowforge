@@ -28,12 +28,13 @@ public sealed class MapCatalog
         _gfs = new GameFileSystem(install);
     }
 
-    public MapCatalogResult List()
+    /// <param name="language">The name table to label stages from: "us", "de" or "es".</param>
+    public MapCatalogResult List(string language = "us")
     {
         var manifests = PackManifests.Load(_install);
         var stages = new List<MapCatalogEntry>();
         var warnings = new List<string>();
-        var names = NameTables.Load(_gfs);
+        var names = NameTables.Load(_gfs, language);
         foreach (var (mapFile, regionIPK) in manifests.MapToIPK)
         {
             bool available = new MapRegionReader(_install, regionIPK).Available;

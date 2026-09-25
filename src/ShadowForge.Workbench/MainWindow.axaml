@@ -267,6 +267,89 @@
           </Grid>
         </Panel>
       </TabItem>
+
+      <TabItem Header="Settings">
+        <ScrollViewer>
+          <StackPanel MaxWidth="760" HorizontalAlignment="Left" Spacing="26" Margin="4,0,24,24">
+
+            <StackPanel Spacing="14">
+              <TextBlock Classes="settingsHeader" Text="Game" />
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Game folder" />
+                <TextBlock Classes="settingHelp"
+                           Text="The Blue Dragon game-data folder. Detecting uses SHADOWFORGE_GAME_ROOT, then the reblue install." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsChooseRootButton" Content="Choose…" />
+                    <Button x:Name="SettingsDetectRootButton" Content="Detect automatically" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsGameRoot" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Name language" />
+                <TextBlock Classes="settingHelp"
+                           Text="Which of the game's name tables labels characters and stages." />
+                <ComboBox x:Name="SettingsLanguageBox" MinWidth="200" />
+              </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="14">
+              <TextBlock Classes="settingsHeader" Text="Tools" />
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Blender" />
+                <TextBlock Classes="settingHelp"
+                           Text="The blender.exe that Open in Blender starts. It needs the ShadowForge extension installed." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseBlenderButton" Content="Browse…" />
+                    <Button x:Name="SettingsDetectBlenderButton" Content="Detect" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsBlenderPath" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+            </StackPanel>
+
+            <StackPanel Spacing="14">
+              <TextBlock Classes="settingsHeader" Text="Output" />
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Derived characters" />
+                <TextBlock Classes="settingHelp" Text="Derive new… writes each new character to a folder here." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseDerivedButton" Content="Browse…" />
+                    <Button x:Name="SettingsOpenDerivedButton" Content="Open" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsDerivedRoot" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Map exports" />
+                <TextBlock Classes="settingHelp" Text="Export glTF writes each stage to a folder here." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseMapExportButton" Content="Browse…" />
+                    <Button x:Name="SettingsOpenMapExportButton" Content="Open" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsMapExportRoot" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+              <CheckBox x:Name="SettingsExportTextures" Content="Include textures in map exports" />
+            </StackPanel>
+
+            <StackPanel Spacing="14">
+              <TextBlock Classes="settingsHeader" Text="Preview" />
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Texture quality" />
+                <TextBlock Classes="settingHelp"
+                           Text="The size textures are scaled to in the textured previews. Higher is sharper but slower to load and uses more memory on large stages." />
+                <ComboBox x:Name="SettingsTextureQualityBox" MinWidth="200" />
+              </StackPanel>
+            </StackPanel>
+
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
     </TabControl>
   </DockPanel>
 
@@ -276,6 +359,22 @@
       <Setter Property="CornerRadius" Value="4" />
       <Setter Property="Padding" Value="6,2" />
       <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="TextBlock.settingsHeader">
+      <Setter Property="FontSize" Value="18" />
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="StackPanel.setting">
+      <Setter Property="Spacing" Value="4" />
+    </Style>
+    <Style Selector="TextBlock.settingName">
+      <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="TextBlock.settingHelp">
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="Opacity" Value="0.65" />
+      <Setter Property="TextWrapping" Value="Wrap" />
+      <Setter Property="Margin" Value="0,0,0,4" />
     </Style>
     <Style Selector="DockPanel.listTools">
       <Setter Property="Margin" Value="0,0,0,8" />

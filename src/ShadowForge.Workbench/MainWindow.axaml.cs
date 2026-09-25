@@ -121,7 +121,8 @@ public partial class MainWindow : Window
         {
             if (_statusFolder is not null) Process.Start("explorer.exe", _statusFolder);
         };
-        Opened += (_, _) => Load(null);
+        SetUpSettings();
+        Opened += (_, _) => Load(_settings.GameRoot, remember: false, fallBackToDetect: true);
     }
 
     private async void OnChooseRoot(object? sender, RoutedEventArgs e)
@@ -131,21 +132,38 @@ public partial class MainWindow : Window
             Title = "Choose the Blue Dragon game-data folder",
         });
         if (picked is [var folder, ..] && folder.TryGetLocalPath() is { } path)
-            Load(path);
+            Load(path, remember: true);
     }
 
-    private void Load(string? explicitRoot)
+    /// <summary>
+    /// Opens a game folder, or detects one when <paramref name="explicitRoot"/> is null.
+    /// <paramref name="remember"/> saves the choice once it loads, so a folder that fails is
+    /// never remembered. <paramref name="fallBackToDetect"/> detects instead when the saved
+    /// folder is no longer valid.
+    /// </summary>
+    private void Load(string? explicitRoot, bool remember, bool fallBackToDetect = false)
     {
         SetStatus("Loading…");
+        string language = _settings.NameLanguage;
         Task.Run(() =>
         {
             try
             {
-                var install = GameInstall.Locate(explicitRoot);
-                var characters = new EntityCatalog(install).ListChara()
+                GameInstall install;
+                string? note = null;
+                try
+                {
+                    install = GameInstall.Locate(explicitRoot);
+                }
+                catch (DirectoryNotFoundException) when (fallBackToDetect && explicitRoot is not null)
+                {
+                    install = GameInstall.Locate(null);
+                    note = $"The saved game folder {explicitRoot} is not valid, so the detected one is open. ";
+                }
+                var characters = new EntityCatalog(install).ListChara(language)
                     .Select(c => new CharacterRow(c.Id, c.DisplayName, c.Class, c.ModelDefRelPath))
                     .ToList();
-                var mapResult = new MapCatalog(install).List();
+                var mapResult = new MapCatalog(install).List(language);
                 var maps = mapResult.Stages
                     .Select(m => new MapRow(m.StageId, m.DisplayName, m.RegionIPK, m.Category,
                         $"{m.RegionIPK} · " + (m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing"),
@@ -157,7 +175,13 @@ public partial class MainWindow : Window
                 Dispatcher.UIThread.Post(() =>
                 {
                     _install = install;
+                    if (remember)
+                    {
+                        _settings.GameRoot = explicitRoot;
+                        _settings.Save();
+                    }
                     RootText.Text = $"{install.GameDataRoot}  ({install.Source})";
+                    ShowSettings();
                     _characters = characters;
                     _maps = maps;
                     _mods = mods;
@@ -166,7 +190,7 @@ public partial class MainWindow : Window
                     SetFilterChoices(MapCategoryBox, AllCategories, maps.Select(m => m.Category), _settings.MapCategory);
                     ApplyFilter();
                     string modCount = modCatalog is null ? "no mods folder" : $"{mods.Count} mods";
-                    SetStatus($"{characters.Count} characters, {maps.Count} stages, {modCount}"
+                    SetStatus(note + $"{characters.Count} characters, {maps.Count} stages, {modCount}"
                         + (mapResult.Warnings.Count > 0 ? $", {mapResult.Warnings.Count} map warnings" : ""));
                 });
             }
@@ -404,6 +428,7 @@ public partial class MainWindow : Window
 
         _characterTexturesFor = shown;
         TextureStatus.Text = "Loading textures…";
+        int maxSize = PreviewTextureLimit;
         Task.Run(() =>
         {
             string dir = Path.Combine(Path.GetTempPath(), "ShadowForge", "preview-" + Guid.NewGuid().ToString("N"));
@@ -413,7 +438,7 @@ public partial class MainWindow : Window
                 if (rig.Skeleton is null) throw new FileNotFoundException("The rig has no model file.");
                 var names = rig.TextureOverrideCsv is { } csv ? TexCsvFile.ReadFile(csv).DDSNames : null;
                 var model = ModelCooker.Bake(ModelReader.Read(File.ReadAllBytes(rig.Skeleton)));
-                var mesh = new PreviewMeshBuilder().Add(model, Matrix4x4.Identity, names).Build().WithTextures(dir);
+                var mesh = new PreviewMeshBuilder().Add(model, Matrix4x4.Identity, names).Build().WithTextures(dir, maxSize);
                 Post(row, () =>
                 {
                     if (!ReferenceEquals(Preview.Mesh, shown)) return;
@@ -444,13 +469,14 @@ public partial class MainWindow : Window
 
         _mapTexturesFor = shown;
         MapTextureStatus.Text = "Loading textures…";
+        int maxSize = PreviewTextureLimit;
         Task.Run(() =>
         {
             string dir = Path.Combine(Path.GetTempPath(), "ShadowForge", "preview-" + Guid.NewGuid().ToString("N"));
             try
             {
                 new MapRegionReader(install, row.Region).ExtractAll(dir);
-                var mesh = shown.WithTextures(dir);
+                var mesh = shown.WithTextures(dir, maxSize);
                 Post(row, () =>
                 {
                     if (!ReferenceEquals(MapPreview.Mesh, shown)) return;
@@ -597,7 +623,8 @@ public partial class MainWindow : Window
         ExportMapButton.IsEnabled = false;
         try
         {
-            var result = await Task.Run(() => new MapExporter(install).Export(row.Id, outDir,
+            bool textures = _settings.ExportTextures;
+            var result = await Task.Run(() => new MapExporter(install).Export(row.Id, outDir, includeTextures: textures,
                 progress: line => Dispatcher.UIThread.Post(() => SetStatus($"Exporting {row.Id}: {line}"))));
             string warnings = result.Warnings.Count > 0 ? $" ({result.Warnings.Count} warnings)" : "";
             SetStatus($"Exported {row.Id} to {result.GlbPath}{warnings}", outDir);
