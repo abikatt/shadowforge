@@ -66,9 +66,15 @@ public partial class MainWindow : Window
     ];
 
     /// <summary>
-    /// Looks down on a stage from above; a negative pitch puts the camera above the model.
+    /// Faces a character from the front and a little above. Characters face +Z, so a yaw of
+    /// 180 turns them toward the camera, and a negative pitch puts the camera above the model.
     /// </summary>
-    private static readonly PreviewCamera StageCamera = PreviewCamera.Default with { PitchDeg = -45f };
+    private static readonly PreviewCamera CharacterCamera = new(180f, -15f, 1f, 0f, 0f);
+
+    /// <summary>
+    /// Looks down on a stage from above at an angle.
+    /// </summary>
+    private static readonly PreviewCamera StageCamera = new(30f, -45f, 1f, 0f, 0f);
 
     public MainWindow()
     {
@@ -82,6 +88,7 @@ public partial class MainWindow : Window
         SetUpListOptions();
         OpenInBlenderButton.Click += OnOpenInBlender;
         DeriveButton.Click += OnDerive;
+        Preview.HomeCamera = CharacterCamera;
         MapPreview.HomeCamera = StageCamera;
         var initial = ShadingOptions.FirstOrDefault(o => o.Value == _settings.PreviewShading) ?? ShadingOptions[0];
         foreach (var box in new[] { ShadingBox, MapShadingBox })
