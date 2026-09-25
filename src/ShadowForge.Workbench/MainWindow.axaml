@@ -3,7 +3,8 @@
         xmlns:local="using:ShadowForge.Workbench"
         x:Class="ShadowForge.Workbench.MainWindow"
         Title="ShadowForge Workbench"
-        Width="1100" Height="700" MinWidth="640" MinHeight="400">
+        Width="1500" Height="950" MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterScreen">
   <DockPanel>
     <Border DockPanel.Dock="Top" Padding="12,8" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
       <Grid ColumnDefinitions="Auto,*,Auto,260">
@@ -25,7 +26,7 @@
 
     <TabControl x:Name="Tabs" TabStripPlacement="Left" Padding="12">
       <TabItem Header="Characters">
-        <Grid ColumnDefinitions="*,12,360">
+        <Grid ColumnDefinitions="*,12,520">
           <ListBox x:Name="CharacterList">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="local:CharacterRow">
@@ -48,7 +49,7 @@
                          TextWrapping="Wrap" TextAlignment="Center" Margin="24" />
               <DockPanel x:Name="DetailsPanel" IsVisible="False">
                 <StackPanel DockPanel.Dock="Top" Spacing="10">
-                  <Border CornerRadius="6" ClipToBounds="True" Height="300" Background="#2A2A2C">
+                  <Border CornerRadius="6" ClipToBounds="True" Height="480" Background="#2A2A2C">
                     <Panel>
                       <local:ModelPreview x:Name="Preview" />
                       <TextBlock x:Name="PreviewText" HorizontalAlignment="Center" VerticalAlignment="Center"
@@ -94,7 +95,7 @@
       </TabItem>
 
       <TabItem Header="Maps">
-        <Grid ColumnDefinitions="*,12,360">
+        <Grid ColumnDefinitions="*,12,520">
           <ListBox x:Name="MapList">
             <ListBox.ItemTemplate>
               <DataTemplate x:DataType="local:MapRow">
@@ -117,7 +118,7 @@
                          TextWrapping="Wrap" TextAlignment="Center" Margin="24" />
               <DockPanel x:Name="MapDetailsPanel" IsVisible="False">
                 <StackPanel DockPanel.Dock="Top" Spacing="10">
-                  <Border CornerRadius="6" ClipToBounds="True" Height="300" Background="#2A2A2C">
+                  <Border CornerRadius="6" ClipToBounds="True" Height="480" Background="#2A2A2C">
                     <Panel>
                       <local:ModelPreview x:Name="MapPreview" />
                       <TextBlock x:Name="MapPreviewText" HorizontalAlignment="Center" VerticalAlignment="Center"
