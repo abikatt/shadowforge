@@ -122,6 +122,7 @@ public partial class MainWindow : Window
             if (_statusFolder is not null) Process.Start("explorer.exe", _statusFolder);
         };
         SetUpSettings();
+        SetUpScripts();
         Opened += (_, _) => Load(_settings.GameRoot, remember: false, fallBackToDetect: true);
     }
 
@@ -169,6 +170,7 @@ public partial class MainWindow : Window
                         $"{m.RegionIPK} · " + (m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing"),
                         m.RegionAvailable, m.ModelCount))
                     .ToList();
+                var scripts = IndexScripts(install, maps.Select(m => m.Id));
                 var modCatalog = install.ModsRoot is null ? null : new ModCatalog(install);
                 var mods = modCatalog?.List() ?? [];
 
@@ -184,6 +186,7 @@ public partial class MainWindow : Window
                     ShowSettings();
                     _characters = characters;
                     _maps = maps;
+                    _scriptsByStage = scripts;
                     _mods = mods;
                     ShowModCatalog(modCatalog);
                     SetFilterChoices(CharacterClassBox, AllClasses, characters.Select(c => c.Class), _settings.CharacterClass);
@@ -544,6 +547,7 @@ public partial class MainWindow : Window
         OpenMapInBlenderButton.IsEnabled = row.RegionAvailable;
         ExportMapButton.IsEnabled = row.RegionAvailable;
         StageEntryList.ItemsSource = null;
+        ShowScripts(row);
         MapPreview.Mesh = null;
         MapPreviewHint.IsVisible = false;
         MapTextureStatus.Text = "";

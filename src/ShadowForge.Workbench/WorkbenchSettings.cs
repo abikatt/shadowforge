@@ -33,6 +33,18 @@ public sealed class WorkbenchSettings
     public bool ExportTextures { get; set; } = true;
 
     /// <summary>
+    /// Where edited scene scripts are kept as BDSL text, mirroring the game's script folders.
+    /// </summary>
+    public string ScriptWorkRoot { get; set; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "scripts");
+
+    /// <summary>
+    /// The mod that Build compiles scene scripts into, and whether it enables that mod.
+    /// </summary>
+    public string ScriptModName { get; set; } = "scene_edits";
+    public bool ScriptEnableOnBuild { get; set; } = true;
+
+    /// <summary>
     /// The longest side, in pixels, that preview textures are scaled down to. 0 keeps full size.
     /// </summary>
     public int PreviewTextureSize { get; set; } = 512;

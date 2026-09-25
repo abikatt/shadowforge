@@ -92,6 +92,16 @@ public partial class MainWindow
             }
         };
         SettingsOpenMapExportButton.Click += (_, _) => OpenFolder(_settings.MapExportRoot);
+        SettingsBrowseScriptsButton.Click += async (_, _) =>
+        {
+            if (await PickFolder("Choose where edited scene scripts are kept") is { } path)
+            {
+                _settings.ScriptWorkRoot = path;
+                SaveSettings();
+                ShowScripts(_selectedMap);
+            }
+        };
+        SettingsOpenScriptsButton.Click += (_, _) => OpenFolder(_settings.ScriptWorkRoot);
 
         SettingsExportTextures.IsCheckedChanged += (_, _) =>
         {
@@ -121,6 +131,7 @@ public partial class MainWindow
         SettingsBlenderPath.Text = _settings.BlenderPath ?? "Not set. Found on first use, or pick one here.";
         SettingsDerivedRoot.Text = _settings.DerivedRoot;
         SettingsMapExportRoot.Text = _settings.MapExportRoot;
+        SettingsScriptRoot.Text = _settings.ScriptWorkRoot;
         SettingsExportTextures.IsChecked = _settings.ExportTextures;
         SettingsTextureQualityBox.SelectedItem =
             TextureQualities.FirstOrDefault(q => q.MaxSize == _settings.PreviewTextureSize) ?? TextureQualities[1];
