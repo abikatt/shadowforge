@@ -55,6 +55,8 @@
                       <TextBlock x:Name="PreviewText" HorizontalAlignment="Center" VerticalAlignment="Center"
                                  Opacity="0.6" TextWrapping="Wrap" TextAlignment="Center" Margin="16"
                                  IsHitTestVisible="False" />
+                      <ComboBox x:Name="ShadingBox" Classes="shading" />
+                      <TextBlock x:Name="TextureStatus" Classes="textureStatus" />
                     </Panel>
                   </Border>
                   <TextBlock x:Name="PreviewHint" HorizontalAlignment="Center" Margin="0,-4,0,0"
@@ -124,6 +126,8 @@
                       <TextBlock x:Name="MapPreviewText" HorizontalAlignment="Center" VerticalAlignment="Center"
                                  Opacity="0.6" TextWrapping="Wrap" TextAlignment="Center" Margin="16"
                                  IsHitTestVisible="False" />
+                      <ComboBox x:Name="MapShadingBox" Classes="shading" />
+                      <TextBlock x:Name="MapTextureStatus" Classes="textureStatus" />
                     </Panel>
                   </Border>
                   <TextBlock x:Name="MapPreviewHint" HorizontalAlignment="Center" Margin="0,-4,0,0"
@@ -244,6 +248,22 @@
       <Setter Property="CornerRadius" Value="4" />
       <Setter Property="Padding" Value="6,2" />
       <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="ComboBox.shading">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Top" />
+      <Setter Property="Margin" Value="8" />
+      <Setter Property="MinWidth" Value="160" />
+      <Setter Property="FontSize" Value="12" />
+      <Setter Property="ToolTip.Tip" Value="Preview shading" />
+    </Style>
+    <Style Selector="TextBlock.textureStatus">
+      <Setter Property="HorizontalAlignment" Value="Left" />
+      <Setter Property="VerticalAlignment" Value="Bottom" />
+      <Setter Property="Margin" Value="10,8" />
+      <Setter Property="FontSize" Value="11" />
+      <Setter Property="Opacity" Value="0.6" />
+      <Setter Property="IsHitTestVisible" Value="False" />
     </Style>
     <Style Selector="Border.panel">
       <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />

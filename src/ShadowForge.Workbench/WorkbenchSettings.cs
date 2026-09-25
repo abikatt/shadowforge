@@ -1,4 +1,5 @@
 using System.Text.Json;
+using ShadowForge.Formats.HDB;
 
 namespace ShadowForge.Workbench;
 
@@ -14,6 +15,11 @@ public sealed class WorkbenchSettings
     private static readonly JsonSerializerOptions JsonOptions = new() { WriteIndented = true };
 
     public string? BlenderPath { get; set; }
+
+    /// <summary>
+    /// The shading both previews use, kept between runs.
+    /// </summary>
+    public PreviewShading PreviewShading { get; set; } = PreviewShading.Flat;
 
     /// <summary>
     /// Where derived entities are written, one folder per new id.

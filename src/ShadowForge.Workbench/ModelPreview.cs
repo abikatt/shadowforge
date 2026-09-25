@@ -21,6 +21,7 @@ public sealed class ModelPreview : Control
     private readonly object _gate = new();
     private PreviewMesh? _mesh;
     private PreviewCamera _camera = PreviewCamera.Default;
+    private PreviewShading _shading = PreviewShading.Flat;
     private PixelSize _size;
     private bool _dirty;
     private bool _rendering;
@@ -61,6 +62,26 @@ public sealed class ModelPreview : Control
                 RequestFrame();
             }
         }
+    }
+
+    public PreviewShading Shading
+    {
+        get => _shading;
+        set
+        {
+            lock (_gate) _shading = value;
+            RequestFrame();
+        }
+    }
+
+    /// <summary>
+    /// Shows <paramref name="mesh"/> from the current camera, for a copy of the shown mesh
+    /// that has gained textures.
+    /// </summary>
+    public void ReplaceMesh(PreviewMesh mesh)
+    {
+        lock (_gate) _mesh = mesh;
+        RequestFrame();
     }
 
     public override void Render(DrawingContext context)
@@ -159,6 +180,7 @@ public sealed class ModelPreview : Control
         {
             PreviewMesh mesh;
             PreviewCamera camera;
+            PreviewShading shading;
             PixelSize size;
             lock (_gate)
             {
@@ -168,13 +190,13 @@ public sealed class ModelPreview : Control
                     return;
                 }
                 _dirty = false;
-                (mesh, camera, size) = (_mesh, _camera, _size);
+                (mesh, camera, shading, size) = (_mesh, _camera, _shading, _size);
             }
 
             int count = size.Width * size.Height;
             var pixels = new int[count];
             if (zBuffer.Length < count) zBuffer = new float[count];
-            PreviewRenderer.RenderInto(mesh, camera, MemoryMarshal.Cast<int, Rgba32>(pixels.AsSpan()),
+            PreviewRenderer.RenderInto(mesh, camera, shading, MemoryMarshal.Cast<int, Rgba32>(pixels.AsSpan()),
                 zBuffer, size.Width, size.Height);
 
             Dispatcher.UIThread.Post(() => Present(mesh, pixels, size));

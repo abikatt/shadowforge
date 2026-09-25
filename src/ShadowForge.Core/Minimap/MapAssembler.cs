@@ -23,6 +23,39 @@ public static class MapAssembler
         var map = StageDef.Read(files.ReadMapDef(stem));
         var tris = new List<Tri>();
 
+        foreach (var placed in PlaceModels(files, stem, map, log))
+            Mesh.CollectTriangles(placed.Model, placed.Transform, tris);
+
+        var collision = new List<Tri>();
+        foreach (var part in map.Parts)
+        {
+            if (!string.Equals(part.Kind, "OCT", StringComparison.OrdinalIgnoreCase))
+                continue;
+
+            if (ReadAsset(files, stem, part.Path, log) is not { } hocb)
+            {
+                log?.Invoke($"error: could not resolve PARTS OCT path '{part.Path}'");
+                continue;
+            }
+
+            foreach (var t in CollisionMesh.Read(hocb).Triangles)
+                collision.Add(new Tri(t.A, t.B, t.C));
+        }
+
+        return new StageMesh { Render = tris, Collision = collision };
+    }
+
+    /// <summary>
+    /// The stage's placed render models, each cooked and with its MODEL block's transform.
+    /// Lighting rigs, obstruction meshes and sky/water/far-scenery models are skipped, as are
+    /// models whose OBJECT .hdb cannot be found.
+    /// </summary>
+    public static IReadOnlyList<PlacedModel> PlaceModels(GameFileSystem files, string stem, Action<string>? log = null) =>
+        PlaceModels(files, stem, StageDef.Read(files.ReadMapDef(stem)), log);
+
+    private static List<PlacedModel> PlaceModels(GameFileSystem files, string stem, StageDef map, Action<string>? log)
+    {
+        var placed = new List<PlacedModel>();
         foreach (var model in map.Models)
         {
             string? objectHDB = model.ObjectHDB;
@@ -44,27 +77,9 @@ public static class MapAssembler
                 continue;
             }
 
-            var modelFile = ModelCooker.Bake(ModelReader.Read(hdb));
-            Mesh.CollectTriangles(modelFile, BuildTransform(model.Settings), tris);
+            placed.Add(new PlacedModel(model, ModelCooker.Bake(ModelReader.Read(hdb)), BuildTransform(model.Settings)));
         }
-
-        var collision = new List<Tri>();
-        foreach (var part in map.Parts)
-        {
-            if (!string.Equals(part.Kind, "OCT", StringComparison.OrdinalIgnoreCase))
-                continue;
-
-            if (ReadAsset(files, stem, part.Path, log) is not { } hocb)
-            {
-                log?.Invoke($"error: could not resolve PARTS OCT path '{part.Path}'");
-                continue;
-            }
-
-            foreach (var t in CollisionMesh.Read(hocb).Triangles)
-                collision.Add(new Tri(t.A, t.B, t.C));
-        }
-
-        return new StageMesh { Render = tris, Collision = collision };
+        return placed;
     }
 
     private static readonly Regex FarSceneryOrEnvSuffix = new(@"fa\d*$", RegexOptions.IgnoreCase | RegexOptions.Compiled);

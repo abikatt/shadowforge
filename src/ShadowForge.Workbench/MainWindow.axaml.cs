@@ -1,10 +1,12 @@
 using System.Diagnostics;
+using System.Numerics;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using ShadowForge.Formats.HDB;
 using ShadowForge.Formats.MAP;
+using ShadowForge.Formats.MDL;
 using ShadowForge.GameData;
 using ShadowForge.GameData.Entities;
 using ShadowForge.GameData.Maps;
@@ -17,6 +19,11 @@ public sealed record CharacterRow(string Id, string DisplayName, string Category
 public sealed record MapRow(string Id, string Region, string Category, string Detail, bool RegionAvailable);
 
 public sealed record StageEntryRow(string Kind, string Name, string Path);
+
+public sealed record ShadingOption(string Label, PreviewShading Value)
+{
+    public override string ToString() => Label;
+}
 
 public sealed record FileRow(string Role, string Path, bool Exists)
 {
@@ -36,6 +43,18 @@ public partial class MainWindow : Window
     private IReadOnlyList<ModRow> _mods = [];
     private ModRow? _selectedMod;
     private string? _statusFolder;
+    private PreviewMesh? _characterTexturesFor;
+    private PreviewMesh? _mapTexturesFor;
+
+    private static readonly ShadingOption[] ShadingOptions =
+    [
+        new("Flat shaded", PreviewShading.Flat),
+        new("Smooth shaded", PreviewShading.Smooth),
+        new("Wireframe", PreviewShading.Wireframe),
+        new("Material colours", PreviewShading.MaterialColors),
+        new("Textured", PreviewShading.Textured),
+        new("Textured, unlit", PreviewShading.TexturedUnlit),
+    ];
 
     /// <summary>
     /// Looks down on a stage from above; a negative pitch puts the camera above the model.
@@ -51,6 +70,15 @@ public partial class MainWindow : Window
         OpenInBlenderButton.Click += OnOpenInBlender;
         DeriveButton.Click += OnDerive;
         MapPreview.HomeCamera = StageCamera;
+        var initial = ShadingOptions.FirstOrDefault(o => o.Value == _settings.PreviewShading) ?? ShadingOptions[0];
+        foreach (var box in new[] { ShadingBox, MapShadingBox })
+        {
+            box.ItemsSource = ShadingOptions;
+            box.SelectedItem = initial;
+            box.SelectionChanged += (_, _) => SetShading((box.SelectedItem as ShadingOption)?.Value);
+        }
+        Preview.Shading = MapPreview.Shading = initial.Value;
+        TextureStatus.IsVisible = MapTextureStatus.IsVisible = initial.Value.NeedsTextures();
         MapList.SelectionChanged += (_, _) => ShowMapDetails(MapList.SelectedItem as MapRow);
         OpenMapInBlenderButton.Click += OnOpenMapInBlender;
         ExportMapButton.Click += OnExportMap;
@@ -168,6 +196,7 @@ public partial class MainWindow : Window
         Preview.Mesh = null;
         PreviewHint.IsVisible = false;
         PreviewText.Text = "Loading model…";
+        TextureStatus.Text = "";
 
         Task.Run(() =>
         {
@@ -211,6 +240,7 @@ public partial class MainWindow : Window
                     Preview.Mesh = mesh;
                     PreviewHint.IsVisible = true;
                     PreviewText.Text = "";
+                    EnsureCharacterTextures();
                 });
             }
             catch (Exception ex)
@@ -218,6 +248,120 @@ public partial class MainWindow : Window
                 Post(row, () => PreviewText.Text = "Preview failed: " + ex.Message);
             }
         });
+    }
+
+    /// <summary>
+    /// Both previews share one shading, so switching on either tab switches the other.
+    /// </summary>
+    private void SetShading(PreviewShading? shading)
+    {
+        if (shading is not { } value || value == Preview.Shading) return;
+        Preview.Shading = MapPreview.Shading = value;
+        TextureStatus.IsVisible = MapTextureStatus.IsVisible = value.NeedsTextures();
+        var option = ShadingOptions.First(o => o.Value == value);
+        ShadingBox.SelectedItem = option;
+        MapShadingBox.SelectedItem = option;
+        _settings.PreviewShading = value;
+        _settings.Save();
+        EnsureCharacterTextures();
+        EnsureMapTextures();
+    }
+
+    /// <summary>
+    /// Loads the shown character's textures when a textured mode is on. The rig is extracted
+    /// to a temp folder for its textures and its texture-override CSV, which renames slots,
+    /// so the mesh is rebuilt from the rig's own .hdb before the textures are read.
+    /// </summary>
+    private void EnsureCharacterTextures()
+    {
+        if (!Preview.Shading.NeedsTextures() || _selected is not { } row || _install is not { } install
+            || Preview.Mesh is not { HasTextures: false } shown || ReferenceEquals(_characterTexturesFor, shown))
+            return;
+
+        _characterTexturesFor = shown;
+        TextureStatus.Text = "Loading textures…";
+        Task.Run(() =>
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "ShadowForge", "preview-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                var rig = new EntityAssets(install).MaterializeRig(row.Id, dir);
+                if (rig.Skeleton is null) throw new FileNotFoundException("The rig has no model file.");
+                var names = rig.TextureOverrideCsv is { } csv ? TexCsvFile.ReadFile(csv).DDSNames : null;
+                var model = ModelCooker.Bake(ModelReader.Read(File.ReadAllBytes(rig.Skeleton)));
+                var mesh = new PreviewMeshBuilder().Add(model, Matrix4x4.Identity, names).Build().WithTextures(dir);
+                Post(row, () =>
+                {
+                    if (!ReferenceEquals(Preview.Mesh, shown)) return;
+                    Preview.ReplaceMesh(mesh);
+                    TextureStatus.Text = TextureSummary(mesh);
+                });
+            }
+            catch (Exception ex)
+            {
+                Post(row, () => TextureStatus.Text = "Textures failed: " + ex.Message);
+            }
+            finally
+            {
+                DeleteQuietly(dir);
+            }
+        });
+    }
+
+    /// <summary>
+    /// Loads the shown stage's textures when a textured mode is on, from its region pack
+    /// extracted to a temp folder.
+    /// </summary>
+    private void EnsureMapTextures()
+    {
+        if (!MapPreview.Shading.NeedsTextures() || _selectedMap is not { } row || _install is not { } install
+            || MapPreview.Mesh is not { HasTextures: false } shown || ReferenceEquals(_mapTexturesFor, shown))
+            return;
+
+        _mapTexturesFor = shown;
+        MapTextureStatus.Text = "Loading textures…";
+        Task.Run(() =>
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "ShadowForge", "preview-" + Guid.NewGuid().ToString("N"));
+            try
+            {
+                new MapRegionReader(install, row.Region).ExtractAll(dir);
+                var mesh = shown.WithTextures(dir);
+                Post(row, () =>
+                {
+                    if (!ReferenceEquals(MapPreview.Mesh, shown)) return;
+                    MapPreview.ReplaceMesh(mesh);
+                    MapTextureStatus.Text = TextureSummary(mesh);
+                });
+            }
+            catch (Exception ex)
+            {
+                Post(row, () => MapTextureStatus.Text = "Textures failed: " + ex.Message);
+            }
+            finally
+            {
+                DeleteQuietly(dir);
+            }
+        });
+    }
+
+    private static string TextureSummary(PreviewMesh mesh)
+    {
+        int total = mesh.MaterialNames.Count;
+        return mesh.TexturesFound == total
+            ? $"{total} textures"
+            : $"{mesh.TexturesFound} of {total} textures found, the rest drawn grey";
+    }
+
+    private static void DeleteQuietly(string dir)
+    {
+        try
+        {
+            if (Directory.Exists(dir)) Directory.Delete(dir, recursive: true);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+        }
     }
 
     private void Post(CharacterRow row, Action update) =>
@@ -252,6 +396,7 @@ public partial class MainWindow : Window
         StageEntryList.ItemsSource = null;
         MapPreview.Mesh = null;
         MapPreviewHint.IsVisible = false;
+        MapTextureStatus.Text = "";
         MapPreviewText.Text = row.RegionAvailable ? "Assembling stage…" : "Region pack missing, nothing to preview.";
 
         Task.Run(() =>
@@ -279,7 +424,10 @@ public partial class MainWindow : Window
 
             try
             {
-                var mesh = MapAssembler.AssembleStage(files, row.Id).ToPreviewMesh();
+                var builder = new PreviewMeshBuilder();
+                foreach (var placed in MapAssembler.PlaceModels(files, row.Id))
+                    builder.Add(placed.Model, placed.Transform);
+                var mesh = builder.Build();
                 Post(row, () =>
                 {
                     if (mesh.TriangleCount == 0)
@@ -290,6 +438,7 @@ public partial class MainWindow : Window
                     MapPreview.Mesh = mesh;
                     MapPreviewHint.IsVisible = true;
                     MapPreviewText.Text = "";
+                    EnsureMapTextures();
                 });
             }
             catch (Exception ex)

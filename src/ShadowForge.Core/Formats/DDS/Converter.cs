@@ -31,6 +31,17 @@ public static class Converter
     }
 
     /// <summary>
+    /// The texture as RGBA bytes, row by row from the top. A volume yields only its first
+    /// depth slice.
+    /// </summary>
+    public static (byte[] Rgba, int Width, int Height) DecodeRgba(byte[] rawData, bool isVolume = false)
+    {
+        var (rgba, width, height, _) = DecodeToRgba(rawData, is2D: !isVolume, performGlobalSwap: true);
+        int sliceBytes = width * height * 4;
+        return (rgba.Length == sliceBytes ? rgba : rgba[..sliceBytes], width, height);
+    }
+
+    /// <summary>
     /// One PNG per depth slice of a volume texture, in depth order. For fur, slice 0 is the
     /// layer sampled at the skin and later slices thin out toward the shell tip.
     /// </summary>
