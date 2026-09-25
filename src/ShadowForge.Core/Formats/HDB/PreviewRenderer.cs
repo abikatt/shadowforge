@@ -46,7 +46,47 @@ public static class PreviewRenderer
         return ms.ToArray();
     }
 
-    private readonly record struct Triangle(Vector3 A, Vector3 B, Vector3 C);
+    /// <summary>
+    /// Collects a model's bind-pose triangles once, for repeated <see cref="RenderInto"/> calls.
+    /// </summary>
+    public static PreviewMesh Prepare(ModelFile model) => new(CollectTriangles(model));
+
+    /// <summary>
+    /// Renders a prepared mesh into caller-owned buffers of width * height. Unlike
+    /// <see cref="Render"/>, the framing comes from the mesh's bounding sphere, not the
+    /// rotated bounds, so the model keeps its size as the camera orbits.
+    /// </summary>
+    public static void RenderInto(PreviewMesh mesh, PreviewCamera camera,
+        Span<Rgba32> pixels, Span<float> zBuffer, int width, int height)
+    {
+        if (width <= 0 || height <= 0) throw new ArgumentOutOfRangeException(nameof(width));
+        int count = width * height;
+        if (pixels.Length < count || zBuffer.Length < count)
+            throw new ArgumentException("Buffers are smaller than width * height.");
+        if (!(camera.Zoom > 0f))
+            throw new ArgumentOutOfRangeException(nameof(camera), "Zoom must be positive; start from PreviewCamera.Default.");
+
+        pixels[..count].Fill(Background);
+        zBuffer[..count].Fill(float.PositiveInfinity);
+        if (mesh.Triangles.Count == 0) return;
+
+        var view = Matrix4x4.CreateTranslation(-mesh.Center)
+            * BuildViewMatrix(camera.YawDeg, camera.PitchDeg);
+        float scale = 0.48f * MathF.Min(width, height) / mesh.Radius * camera.Zoom;
+        float ox = width * 0.5f + camera.PanX * MathF.Min(width, height);
+        float oy = height * 0.5f + camera.PanY * MathF.Min(width, height);
+
+        foreach (var t in mesh.Triangles)
+        {
+            var viewed = new Triangle(
+                Vector3.Transform(t.A, view),
+                Vector3.Transform(t.B, view),
+                Vector3.Transform(t.C, view));
+            Rasterize(viewed, scale, ox, oy, width, height, pixels, zBuffer);
+        }
+    }
+
+    internal readonly record struct Triangle(Vector3 A, Vector3 B, Vector3 C);
 
     private static List<Triangle> CollectTriangles(ModelFile model)
     {
@@ -114,7 +154,7 @@ public static class PreviewRenderer
     }
 
     private static void Rasterize(Triangle tri, float scale, float ox, float oy,
-        int width, int height, Rgba32[] pixels, float[] zBuffer)
+        int width, int height, Span<Rgba32> pixels, Span<float> zBuffer)
     {
         float ax = tri.A.X * scale + ox, ay = -tri.A.Y * scale + oy, az = tri.A.Z;
         float bx = tri.B.X * scale + ox, by = -tri.B.Y * scale + oy, bz = tri.B.Z;

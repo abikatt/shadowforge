@@ -1,0 +1,145 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:local="using:ShadowForge.Workbench"
+        x:Class="ShadowForge.Workbench.MainWindow"
+        Title="ShadowForge Workbench"
+        Width="1100" Height="700" MinWidth="640" MinHeight="400">
+  <DockPanel>
+    <Border DockPanel.Dock="Top" Padding="12,8" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+      <Grid ColumnDefinitions="Auto,*,Auto,260">
+        <TextBlock Text="ShadowForge" FontWeight="SemiBold" FontSize="16" VerticalAlignment="Center" />
+        <TextBlock x:Name="RootText" Grid.Column="1" Margin="16,0" VerticalAlignment="Center"
+                   Opacity="0.7" TextTrimming="CharacterEllipsis" />
+        <Button x:Name="ChooseRootButton" Grid.Column="2" Content="Game folder…" Margin="0,0,8,0" />
+        <TextBox x:Name="SearchBox" Grid.Column="3" PlaceholderText="Search" />
+      </Grid>
+    </Border>
+
+    <Border DockPanel.Dock="Bottom" Padding="12,4" Background="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}">
+      <DockPanel>
+        <Button x:Name="ShowFolderButton" DockPanel.Dock="Right" Content="Show folder" IsVisible="False"
+                Padding="8,2" FontSize="12" />
+        <TextBlock x:Name="StatusText" Opacity="0.8" TextTrimming="CharacterEllipsis" VerticalAlignment="Center" />
+      </DockPanel>
+    </Border>
+
+    <TabControl x:Name="Tabs" TabStripPlacement="Left" Padding="12">
+      <TabItem Header="Characters">
+        <Grid ColumnDefinitions="*,12,360">
+          <ListBox x:Name="CharacterList">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="local:CharacterRow">
+                <Grid ColumnDefinitions="100,*,Auto">
+                  <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
+                  <StackPanel Grid.Column="1">
+                    <TextBlock Text="{Binding DisplayName}" />
+                    <TextBlock Text="{Binding ModelDef}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
+                  </StackPanel>
+                  <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Category}" FontSize="11" /></Border>
+                </Grid>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+
+          <Border Grid.Column="2" Classes="panel">
+            <Panel>
+              <TextBlock x:Name="NoSelectionText" Text="Select a character to see its files and preview."
+                         HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6"
+                         TextWrapping="Wrap" TextAlignment="Center" Margin="24" />
+              <DockPanel x:Name="DetailsPanel" IsVisible="False">
+                <StackPanel DockPanel.Dock="Top" Spacing="10">
+                  <Border CornerRadius="6" ClipToBounds="True" Height="300" Background="#2A2A2C">
+                    <Panel>
+                      <local:ModelPreview x:Name="Preview" />
+                      <TextBlock x:Name="PreviewText" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 Opacity="0.6" TextWrapping="Wrap" TextAlignment="Center" Margin="16"
+                                 IsHitTestVisible="False" />
+                    </Panel>
+                  </Border>
+                  <TextBlock x:Name="PreviewHint" HorizontalAlignment="Center" Margin="0,-4,0,0"
+                             FontSize="11" Opacity="0.45"
+                             Text="Drag rotate · Right-drag pan · Scroll zoom · Double-click reset" />
+                  <StackPanel Spacing="2">
+                    <TextBlock x:Name="DetailId" FontSize="20" FontWeight="SemiBold" FontFamily="Consolas,monospace" />
+                    <TextBlock x:Name="DetailRig" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <Grid ColumnDefinitions="*,8,*">
+                    <Button x:Name="OpenInBlenderButton" Content="Open in Blender" Classes="accent"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                    <Button x:Name="DeriveButton" Grid.Column="2" Content="Derive new…"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                  </Grid>
+                  <TextBlock Text="Files" FontWeight="SemiBold" Margin="0,6,0,0" />
+                </StackPanel>
+                <ScrollViewer>
+                  <ItemsControl x:Name="FileList">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="local:FileRow">
+                        <StackPanel Margin="0,0,0,8" Opacity="{Binding Opacity}">
+                          <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding Role}" FontSize="12" FontWeight="SemiBold" />
+                            <TextBlock Text="{Binding Note}" FontSize="12" Foreground="#E0A040" />
+                          </StackPanel>
+                          <TextBlock Text="{Binding Path}" FontSize="11" FontFamily="Consolas,monospace"
+                                     TextWrapping="Wrap" Opacity="0.75" />
+                        </StackPanel>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </DockPanel>
+            </Panel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <TabItem Header="Maps">
+        <ListBox x:Name="MapList">
+          <ListBox.ItemTemplate>
+            <DataTemplate x:DataType="local:MapRow">
+              <Grid ColumnDefinitions="120,*,Auto">
+                <TextBlock Text="{Binding Id}" FontFamily="Consolas,monospace" VerticalAlignment="Center" />
+                <StackPanel Grid.Column="1">
+                  <TextBlock Text="{Binding Region}" />
+                  <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" />
+                </StackPanel>
+                <Border Grid.Column="2" Classes="tag"><TextBlock Text="{Binding Category}" FontSize="11" /></Border>
+              </Grid>
+            </DataTemplate>
+          </ListBox.ItemTemplate>
+        </ListBox>
+      </TabItem>
+
+      <TabItem Header="Mods">
+        <DockPanel>
+          <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7"
+                     Text="Installed mods (read-only in this prototype)." />
+          <ListBox x:Name="ModList">
+            <ListBox.ItemTemplate>
+              <DataTemplate x:DataType="local:ModRow">
+                <StackPanel Orientation="Horizontal" Spacing="12">
+                  <CheckBox IsChecked="{Binding Enabled}" IsEnabled="False" />
+                  <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
+                </StackPanel>
+              </DataTemplate>
+            </ListBox.ItemTemplate>
+          </ListBox>
+        </DockPanel>
+      </TabItem>
+    </TabControl>
+  </DockPanel>
+
+  <Window.Styles>
+    <Style Selector="Border.tag">
+      <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundBaseLowBrush}" />
+      <Setter Property="CornerRadius" Value="4" />
+      <Setter Property="Padding" Value="6,2" />
+      <Setter Property="VerticalAlignment" Value="Center" />
+    </Style>
+    <Style Selector="Border.panel">
+      <Setter Property="Background" Value="{DynamicResource SystemControlBackgroundChromeMediumLowBrush}" />
+      <Setter Property="CornerRadius" Value="8" />
+      <Setter Property="Padding" Value="14" />
+    </Style>
+  </Window.Styles>
+</Window>

@@ -1,0 +1,23 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ShadowForge.Workbench.DeriveDialog"
+        Title="Derive new character"
+        Width="440" SizeToContent="Height" CanResize="False"
+        WindowStartupLocation="CenterOwner">
+  <StackPanel Margin="20" Spacing="12">
+    <TextBlock x:Name="IntroText" TextWrapping="Wrap" />
+    <StackPanel Spacing="4">
+      <TextBlock Text="New id" FontWeight="SemiBold" />
+      <TextBox x:Name="IdBox" PlaceholderText="e.g. em950" FontFamily="Consolas,monospace" />
+      <TextBlock x:Name="ValidationText" FontSize="12" TextWrapping="Wrap" Opacity="0.8" />
+    </StackPanel>
+    <StackPanel Spacing="4">
+      <TextBlock Text="Output folder" FontWeight="SemiBold" />
+      <TextBlock x:Name="OutText" FontSize="12" TextWrapping="Wrap" Opacity="0.7" />
+    </StackPanel>
+    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+      <Button x:Name="CancelButton" Content="Cancel" IsCancel="True" />
+      <Button x:Name="DeriveButton" Content="Derive" IsDefault="True" IsEnabled="False" Classes="accent" />
+    </StackPanel>
+  </StackPanel>
+</Window>
