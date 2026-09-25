@@ -164,20 +164,76 @@
       </TabItem>
 
       <TabItem Header="Mods">
-        <DockPanel>
-          <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Opacity="0.7"
-                     Text="Installed mods (read-only in this prototype)." />
-          <ListBox x:Name="ModList">
-            <ListBox.ItemTemplate>
-              <DataTemplate x:DataType="local:ModRow">
-                <StackPanel Orientation="Horizontal" Spacing="12">
-                  <CheckBox IsChecked="{Binding Enabled}" IsEnabled="False" />
-                  <TextBlock Text="{Binding Name}" VerticalAlignment="Center" />
-                </StackPanel>
-              </DataTemplate>
-            </ListBox.ItemTemplate>
-          </ListBox>
-        </DockPanel>
+        <Panel>
+          <TextBlock x:Name="NoModsText" IsVisible="False"
+                     HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6"
+                     TextWrapping="Wrap" TextAlignment="Center" MaxWidth="460"
+                     Text="Mods need a reblue install. This game folder is a loose extract, so it has no mods folder. Use Game folder… to choose the game folder of a reblue install." />
+          <Grid x:Name="ModsContent" RowDefinitions="Auto,*" ColumnDefinitions="*,12,520">
+            <DockPanel Grid.ColumnSpan="3" Margin="0,0,0,8">
+              <Button x:Name="AddModButton" DockPanel.Dock="Right" Content="Add mod folder…" />
+              <Button x:Name="OpenModsFolderButton" DockPanel.Dock="Right" Content="Open mods folder"
+                      Margin="0,0,8,0" />
+              <StackPanel VerticalAlignment="Center" Margin="0,0,12,0">
+                <TextBlock x:Name="ModOrderText" FontSize="12" Opacity="0.7" TextTrimming="CharacterEllipsis" />
+                <TextBlock x:Name="ModOrderWarning" FontSize="12" Foreground="#E0A040" IsVisible="False"
+                           TextWrapping="Wrap" />
+              </StackPanel>
+            </DockPanel>
+
+            <ListBox x:Name="ModList" Grid.Row="1">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:ModRow">
+                  <Grid ColumnDefinitions="Auto,*,Auto">
+                    <CheckBox IsChecked="{Binding Enabled, Mode=OneWay}" VerticalAlignment="Center"
+                              ToolTip.Tip="Enable or disable in mod_order.txt" />
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                      <TextBlock Text="{Binding Name}" />
+                      <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" />
+                    </StackPanel>
+                    <Border Grid.Column="2" Classes="tag" IsVisible="{Binding Missing}">
+                      <TextBlock Text="missing" FontSize="11" Foreground="#E0A040" />
+                    </Border>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+
+            <Border Grid.Row="1" Grid.Column="2" Classes="panel">
+              <Panel>
+                <TextBlock x:Name="NoModSelectionText" Text="Select a mod to see its details and files."
+                           HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6"
+                           TextWrapping="Wrap" TextAlignment="Center" Margin="24" />
+                <DockPanel x:Name="ModDetailsPanel" IsVisible="False">
+                  <StackPanel DockPanel.Dock="Top" Spacing="10">
+                    <StackPanel Spacing="2">
+                      <TextBlock x:Name="ModDetailTitle" FontSize="20" FontWeight="SemiBold" TextWrapping="Wrap" />
+                      <TextBlock x:Name="ModDetailByline" FontSize="12" Opacity="0.7" />
+                      <TextBlock x:Name="ModDetailOrder" FontSize="12" Opacity="0.7" />
+                    </StackPanel>
+                    <TextBlock x:Name="ModDetailDescription" TextWrapping="Wrap" />
+                    <Button x:Name="OpenModFolderButton" Content="Open folder" HorizontalAlignment="Left" />
+                    <TextBlock x:Name="ModFilesHeader" FontWeight="SemiBold" Margin="0,6,0,0" />
+                  </StackPanel>
+                  <ScrollViewer>
+                    <ItemsControl x:Name="ModFileList">
+                      <ItemsControl.ItemTemplate>
+                        <DataTemplate x:DataType="local:ModFileRow">
+                          <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,4">
+                            <TextBlock Text="{Binding Path}" FontSize="11" FontFamily="Consolas,monospace"
+                                       TextWrapping="Wrap" Opacity="0.75" VerticalAlignment="Center" />
+                            <TextBlock Grid.Column="1" Text="{Binding Verdict}" FontSize="11" Opacity="0.6"
+                                       Margin="8,0,0,0" VerticalAlignment="Center" />
+                          </Grid>
+                        </DataTemplate>
+                      </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                  </ScrollViewer>
+                </DockPanel>
+              </Panel>
+            </Border>
+          </Grid>
+        </Panel>
       </TabItem>
     </TabControl>
   </DockPanel>

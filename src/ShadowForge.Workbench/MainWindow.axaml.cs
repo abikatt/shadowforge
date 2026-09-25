@@ -8,7 +8,6 @@ using ShadowForge.Formats.MAP;
 using ShadowForge.GameData;
 using ShadowForge.GameData.Entities;
 using ShadowForge.GameData.Maps;
-using ShadowForge.GameData.Mods;
 using ShadowForge.Minimap;
 
 namespace ShadowForge.Workbench;
@@ -18,8 +17,6 @@ public sealed record CharacterRow(string Id, string DisplayName, string Category
 public sealed record MapRow(string Id, string Region, string Category, string Detail, bool RegionAvailable);
 
 public sealed record StageEntryRow(string Kind, string Name, string Path);
-
-public sealed record ModRow(string Name, bool Enabled);
 
 public sealed record FileRow(string Role, string Path, bool Exists)
 {
@@ -35,6 +32,9 @@ public partial class MainWindow : Window
     private IReadOnlyList<MapRow> _maps = [];
     private CharacterRow? _selected;
     private MapRow? _selectedMap;
+    private ModCatalog? _modCatalog;
+    private IReadOnlyList<ModRow> _mods = [];
+    private ModRow? _selectedMod;
     private string? _statusFolder;
 
     /// <summary>
@@ -54,6 +54,18 @@ public partial class MainWindow : Window
         MapList.SelectionChanged += (_, _) => ShowMapDetails(MapList.SelectedItem as MapRow);
         OpenMapInBlenderButton.Click += OnOpenMapInBlender;
         ExportMapButton.Click += OnExportMap;
+        ModList.SelectionChanged += (_, _) => ShowModDetails(ModList.SelectedItem as ModRow);
+        ModList.AddHandler(Button.ClickEvent, OnModCheckBoxClick);
+        AddModButton.Click += OnAddMod;
+        OpenModsFolderButton.Click += (_, _) =>
+        {
+            if (_modCatalog is { } catalog) Process.Start("explorer.exe", catalog.ModsRoot);
+        };
+        OpenModFolderButton.Click += (_, _) =>
+        {
+            if (_modCatalog is { } catalog && _selectedMod is { FolderExists: true } row)
+                Process.Start("explorer.exe", Path.Combine(catalog.ModsRoot, row.Name));
+        };
         ShowFolderButton.Click += (_, _) =>
         {
             if (_statusFolder is not null) Process.Start("explorer.exe", _statusFolder);
@@ -87,9 +99,8 @@ public partial class MainWindow : Window
                     .Select(m => new MapRow(m.StageId, m.RegionIPK, m.Category,
                         m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing", m.RegionAvailable))
                     .ToList();
-                var mods = install.ModsRoot is null
-                    ? []
-                    : new ModDeployer(install).List().Select(m => new ModRow(m.Name, m.Enabled)).ToList();
+                var modCatalog = install.ModsRoot is null ? null : new ModCatalog(install);
+                var mods = modCatalog?.List() ?? [];
 
                 Dispatcher.UIThread.Post(() =>
                 {
@@ -97,9 +108,11 @@ public partial class MainWindow : Window
                     RootText.Text = $"{install.GameDataRoot}  ({install.Source})";
                     _characters = characters;
                     _maps = maps;
-                    ModList.ItemsSource = mods;
+                    _mods = mods;
+                    ShowModCatalog(modCatalog);
                     ApplyFilter();
-                    SetStatus($"{characters.Count} characters, {maps.Count} stages, {mods.Count} mods"
+                    string modCount = modCatalog is null ? "no mods folder" : $"{mods.Count} mods";
+                    SetStatus($"{characters.Count} characters, {maps.Count} stages, {modCount}"
                         + (mapResult.Warnings.Count > 0 ? $", {mapResult.Warnings.Count} map warnings" : ""));
                 });
             }
@@ -122,6 +135,20 @@ public partial class MainWindow : Window
 
         CharacterList.ItemsSource = _characters.Where(c => Match(c.Id, c.DisplayName, c.Category)).ToList();
         MapList.ItemsSource = _maps.Where(m => Match(m.Id, m.Region, m.Category)).ToList();
+        FilterMods(null);
+    }
+
+    /// <summary>
+    /// Refilters only the mod list, so a toggle leaves the other tabs' selections alone, and
+    /// reselects <paramref name="select"/> when it is still listed.
+    /// </summary>
+    private void FilterMods(string? select)
+    {
+        string q = SearchBox.Text?.Trim() ?? "";
+        var rows = _mods.Where(m => q.Length == 0 || m.Name.Contains(q, StringComparison.OrdinalIgnoreCase)).ToList();
+        ModList.ItemsSource = rows;
+        if (select is not null)
+            ModList.SelectedItem = rows.FirstOrDefault(r => r.Name.Equals(select, StringComparison.OrdinalIgnoreCase));
     }
 
     /// <summary>
@@ -309,6 +336,133 @@ public partial class MainWindow : Window
         finally
         {
             ExportMapButton.IsEnabled = _selectedMap?.RegionAvailable ?? false;
+        }
+    }
+
+    private void Post(ModRow row, Action update) =>
+        Dispatcher.UIThread.Post(() =>
+        {
+            if (ReferenceEquals(_selectedMod, row)) update();
+        });
+
+    /// <summary>
+    /// A loose extract has no mods folder, so the tab explains that instead of showing an
+    /// empty list.
+    /// </summary>
+    private void ShowModCatalog(ModCatalog? catalog)
+    {
+        _modCatalog = catalog;
+        NoModsText.IsVisible = catalog is null;
+        ModsContent.IsVisible = catalog is not null;
+        if (catalog is null) return;
+
+        ModOrderText.Text = "Load order: " + catalog.OrderPath;
+        ModOrderWarning.Text = catalog.OtherOrderPath is { } other
+            ? $"Another mod_order.txt exists at {other}. Only the one above is changed."
+            : "";
+        ModOrderWarning.IsVisible = catalog.OtherOrderPath is not null;
+    }
+
+    private void RefreshMods(string? select)
+    {
+        if (_modCatalog is not { } catalog) return;
+        try
+        {
+            _mods = catalog.List();
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Could not list mods: " + ex.Message);
+            return;
+        }
+        FilterMods(select);
+    }
+
+    /// <summary>
+    /// A row's checkbox writes mod_order.txt straight away. The list is then reread, since
+    /// enabling moves a mod to the end of the load order.
+    /// </summary>
+    private void OnModCheckBoxClick(object? sender, RoutedEventArgs e)
+    {
+        if (e.Source is not CheckBox { DataContext: ModRow row } box || _modCatalog is not { } catalog) return;
+
+        bool enable = box.IsChecked == true;
+        try
+        {
+            catalog.SetEnabled(row.Name, enable);
+            SetStatus(enable ? $"Enabled {row.Name}, last in the load order" : $"Disabled {row.Name}");
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Could not update mod_order.txt: " + ex.Message);
+        }
+        RefreshMods(_selectedMod?.Name);
+    }
+
+    private void ShowModDetails(ModRow? row)
+    {
+        _selectedMod = row;
+        NoModSelectionText.IsVisible = row is null;
+        ModDetailsPanel.IsVisible = row is not null;
+        if (row is null || _modCatalog is not { } catalog) return;
+
+        ModDetailTitle.Text = row.Name;
+        ModDetailByline.IsVisible = false;
+        ModDetailOrder.Text = row.Detail;
+        ModDetailDescription.Text = "";
+        ModDetailDescription.IsVisible = false;
+        OpenModFolderButton.IsEnabled = row.FolderExists;
+        ModFilesHeader.Text = "Files";
+        ModFileList.ItemsSource = null;
+
+        Task.Run(() =>
+        {
+            const int maxFiles = 500;
+            ModDetails details;
+            try
+            {
+                details = catalog.Details(row.Name, maxFiles);
+            }
+            catch (Exception ex)
+            {
+                Post(row, () => ModFilesHeader.Text = "Could not read the mod: " + ex.Message);
+                return;
+            }
+            Post(row, () =>
+            {
+                ModDetailTitle.Text = details.Title;
+                ModDetailByline.Text = details.Byline;
+                ModDetailByline.IsVisible = details.Byline is not null;
+                ModDetailDescription.Text = details.Description;
+                ModDetailDescription.IsVisible = details.Description is not null;
+                ModFilesHeader.Text = $"Files ({details.TotalFiles})"
+                    + (details.TotalFiles > details.Files.Count ? $", first {details.Files.Count} shown" : "")
+                    + (details.Traced || details.TotalFiles == 0 ? "" : " · no access log to check them against");
+                ModFileList.ItemsSource = details.Files;
+            });
+        });
+    }
+
+    private async void OnAddMod(object? sender, RoutedEventArgs e)
+    {
+        if (_modCatalog is not { } catalog) return;
+
+        var picked = await StorageProvider.OpenFolderPickerAsync(new FolderPickerOpenOptions
+        {
+            Title = "Choose a mod folder to add",
+        });
+        if (picked is not [var folder, ..] || folder.TryGetLocalPath() is not { } source) return;
+
+        SetStatus($"Adding {Path.GetFileName(source.TrimEnd('\\', '/'))}…");
+        try
+        {
+            string name = await Task.Run(() => catalog.Install(source));
+            RefreshMods(name);
+            SetStatus($"Added {name}. It is disabled until you tick it.", Path.Combine(catalog.ModsRoot, name));
+        }
+        catch (Exception ex)
+        {
+            SetStatus("Could not add the mod: " + ex.Message);
         }
     }
 
