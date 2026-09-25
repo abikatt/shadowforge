@@ -1,7 +1,8 @@
 namespace ShadowForge.GameData.Entities;
 
 /// <summary>
-/// One browsable entity. DisplayName is the id, since the game has no name table to read.
+/// One browsable entity. DisplayName is the game's own name for it (see <see cref="NameTables"/>),
+/// or the id when the game has none.
 /// </summary>
 public sealed record CatalogEntry(string Id, string Category, string Class, string ModelDefRelPath, string DisplayName);
 
@@ -22,13 +23,14 @@ public sealed class EntityCatalog
     {
         var seen = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var list = new List<CatalogEntry>();
+        var names = NameTables.Load(_gfs);
         foreach (string vfs in _gfs.EnumerateVfs(CharaModelDir, "model_*.mdl"))
         {
             string[] segs = vfs.Split('\\');
             if (segs.Length < 2) continue;
             if (EntityId.FromModelDefFileName(segs[^1]) is not { } id) continue;
             if (!seen.Add(id)) continue;
-            list.Add(new CatalogEntry(id, "chara", segs[^2], vfs, id));
+            list.Add(new CatalogEntry(id, "chara", segs[^2], vfs, names.Character(id) ?? id));
         }
         list.Sort((a, b) => string.Compare(a.Id, b.Id, StringComparison.OrdinalIgnoreCase));
         return list;

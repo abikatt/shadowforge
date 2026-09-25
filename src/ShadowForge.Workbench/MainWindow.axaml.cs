@@ -16,7 +16,7 @@ namespace ShadowForge.Workbench;
 
 public sealed record CharacterRow(string Id, string DisplayName, string Category, string ModelDef);
 
-public sealed record MapRow(string Id, string Region, string Category, string Detail, bool RegionAvailable);
+public sealed record MapRow(string Id, string Name, string Region, string Category, string Detail, bool RegionAvailable);
 
 public sealed record StageEntryRow(string Kind, string Name, string Path);
 
@@ -120,12 +120,13 @@ public partial class MainWindow : Window
             {
                 var install = GameInstall.Locate(explicitRoot);
                 var characters = new EntityCatalog(install).ListChara()
-                    .Select(c => new CharacterRow(c.Id, c.DisplayName, c.Category, c.ModelDefRelPath))
+                    .Select(c => new CharacterRow(c.Id, c.DisplayName, c.Class, c.ModelDefRelPath))
                     .ToList();
                 var mapResult = new MapCatalog(install).List();
                 var maps = mapResult.Stages
-                    .Select(m => new MapRow(m.StageId, m.RegionIPK, m.Category,
-                        m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing", m.RegionAvailable))
+                    .Select(m => new MapRow(m.StageId, m.DisplayName, m.RegionIPK, m.Category,
+                        $"{m.RegionIPK} · " + (m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing"),
+                        m.RegionAvailable))
                     .ToList();
                 var modCatalog = install.ModsRoot is null ? null : new ModCatalog(install);
                 var mods = modCatalog?.List() ?? [];
@@ -162,7 +163,7 @@ public partial class MainWindow : Window
             q.Length == 0 || fields.Any(f => f.Contains(q, StringComparison.OrdinalIgnoreCase));
 
         CharacterList.ItemsSource = _characters.Where(c => Match(c.Id, c.DisplayName, c.Category)).ToList();
-        MapList.ItemsSource = _maps.Where(m => Match(m.Id, m.Region, m.Category)).ToList();
+        MapList.ItemsSource = _maps.Where(m => Match(m.Id, m.Name, m.Region, m.Category)).ToList();
         FilterMods(null);
     }
 
@@ -221,7 +222,7 @@ public partial class MainWindow : Window
                 : $"Class {entity.Class}, shared rig {entity.RigClass}\\{entity.RigId}";
             Post(row, () =>
             {
-                DetailRig.Text = rig;
+                DetailRig.Text = row.DisplayName == row.Id ? rig : $"{row.DisplayName} · {rig}";
                 FileList.ItemsSource = files;
             });
 
@@ -389,7 +390,7 @@ public partial class MainWindow : Window
         if (row is null || _install is not { } install) return;
 
         MapDetailId.Text = row.Id;
-        MapDetailInfo.Text = $"{row.Category} · region {row.Region}"
+        MapDetailInfo.Text = (row.Name == row.Id ? "" : row.Name + " · ") + $"{row.Category} · region {row.Region}"
             + (row.RegionAvailable ? "" : " (missing)");
         OpenMapInBlenderButton.IsEnabled = row.RegionAvailable;
         ExportMapButton.IsEnabled = row.RegionAvailable;

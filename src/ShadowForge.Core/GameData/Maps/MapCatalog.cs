@@ -2,8 +2,12 @@ using ShadowForge.Formats.MAP;
 
 namespace ShadowForge.GameData.Maps;
 
+/// <summary>
+/// One stage. DisplayName is the game's place name for it (see <see cref="NameTables"/>), or
+/// the stage id when the game has none, as for battle arenas and world-map tiles.
+/// </summary>
 public sealed record MapCatalogEntry(
-    string StageId, string Category, string RegionIPK, bool RegionAvailable, int ModelCount);
+    string StageId, string Category, string RegionIPK, bool RegionAvailable, int ModelCount, string DisplayName);
 
 public sealed record MapCatalogResult(
     IReadOnlyList<MapCatalogEntry> Stages, IReadOnlyList<string> Warnings);
@@ -29,6 +33,7 @@ public sealed class MapCatalog
         var manifests = PackManifests.Load(_install);
         var stages = new List<MapCatalogEntry>();
         var warnings = new List<string>();
+        var names = NameTables.Load(_gfs);
         foreach (var (mapFile, regionIPK) in manifests.MapToIPK)
         {
             bool available = new MapRegionReader(_install, regionIPK).Available;
@@ -41,8 +46,10 @@ public sealed class MapCatalog
             {
                 warnings.Add($"stage def not found: {mapFile}");
             }
-            stages.Add(new MapCatalogEntry(PackManifests.StageId(mapFile),
-                manifests.MapCategory.GetValueOrDefault(mapFile, ""), regionIPK, available, modelCount));
+            string stageId = PackManifests.StageId(mapFile);
+            stages.Add(new MapCatalogEntry(stageId,
+                manifests.MapCategory.GetValueOrDefault(mapFile, ""), regionIPK, available, modelCount,
+                names.Stage(stageId) ?? stageId));
         }
 
         foreach (string vfs in _gfs.EnumerateVfs(@"database\map", "db_*.map"))

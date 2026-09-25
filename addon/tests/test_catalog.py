@@ -26,6 +26,12 @@ def test_proxy_specs_fields():
     assert pc["name"] == "pc01"
 
 
+def test_asset_name_puts_the_id_after_a_game_name():
+    assert catalog.asset_name("bs01", "Nene") == "Nene (bs01)"
+    assert catalog.asset_name("bt01_01", "bt01_01") == "bt01_01"
+    assert catalog.asset_name("em001", None) == "em001"
+
+
 def test_cats_txt_has_version_and_one_line_per_unique_catalog():
     specs = catalog.proxy_specs(DTO)
     text = catalog.cats_txt(specs)

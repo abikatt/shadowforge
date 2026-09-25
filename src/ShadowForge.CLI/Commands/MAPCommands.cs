@@ -60,7 +60,7 @@ public static class MAPCommands
                 foreach (string w in result.Warnings) log.LogWarning("{Warning}", w);
                 var dto = new MapListDto(result.Stages
                     .Select(s => new MapStageDto(
-                        s.StageId, "map", s.Category, s.StageId, s.RegionIPK, s.RegionAvailable, s.ModelCount))
+                        s.StageId, "map", s.Category, s.DisplayName, s.RegionIPK, s.RegionAvailable, s.ModelCount))
                     .ToList());
                 Console.WriteLine(JsonSerializer.Serialize(dto, ManifestJson.Default.MapListDto));
                 return 0;

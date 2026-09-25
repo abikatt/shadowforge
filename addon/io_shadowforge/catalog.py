@@ -21,6 +21,14 @@ def catalog_uuid(category: str, cls: str) -> str:
     return str(uuid.uuid5(_NS, catalog_path(category, cls)))
 
 
+def asset_name(entity_id: str, display_name) -> str:
+    """The game's name with the id after it, since names repeat (bs01 and bs02
+    are both Nene). An entity the game does not name keeps its bare id."""
+    if not display_name or display_name == entity_id:
+        return entity_id
+    return "%s (%s)" % (display_name, entity_id)
+
+
 def proxy_specs(dto: dict) -> list:
     specs = []
     for e in dto.get("entities") or []:
@@ -28,7 +36,7 @@ def proxy_specs(dto: dict) -> list:
         cls = e.get("class", "")
         specs.append({
             "id": e["id"],
-            "name": e.get("displayName") or e["id"],
+            "name": asset_name(e["id"], e.get("displayName")),
             "category": category,
             "cls": cls,
             "catalog_path": catalog_path(category, cls),
