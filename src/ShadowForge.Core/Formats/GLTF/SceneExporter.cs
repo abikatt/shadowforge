@@ -1,4 +1,5 @@
 using System.Numerics;
+using System.Text.Json.Nodes;
 using ShadowForge.Formats.HDB;
 using ShadowForge.Formats.HMB;
 using SharpGLTF.Geometry;
@@ -16,6 +17,9 @@ using SkinnedVertexBuilder = VertexBuilder<VertexPositionNormal, VertexTexture1,
 
 using StagedMeshBuilder = MeshBuilder<VertexPositionNormal, VertexTexture3, VertexJoints4>;
 using StagedVertexBuilder = VertexBuilder<VertexPositionNormal, VertexTexture3, VertexJoints4>;
+
+using StagedRigidMeshBuilder = MeshBuilder<VertexPositionNormal, VertexTexture3, VertexEmpty>;
+using StagedRigidVertexBuilder = VertexBuilder<VertexPositionNormal, VertexTexture3, VertexEmpty>;
 
 /// <summary>
 /// Writes cooked HDB models to glTF. Vertices are placed at their bind-pose world
@@ -148,18 +152,46 @@ public static class SceneExporter
         }
     }
 
+    /// <summary>
+    /// Staged draws are multi-texture blends on stage geometry: a base texture plus one or two
+    /// layers on their own UV sets. They go to a second mesh per vertex array that keeps all
+    /// three UV sets and draws the stage-0 material on TEXCOORD_0. The layer textures are named
+    /// in the mesh's sfLayers extra, since glTF has no standard way to blend them.
+    /// </summary>
     private static void BuildRigidMeshes(ModelFile model, SceneBuilder scene,
         MaterialBuilder[] materials, BoneGlobal[] boneGlobals,
         NodeBuilder? parent = null, string meshPrefix = "mesh")
     {
+        string TextureName(int i) =>
+            i >= 0 && i < model.Textures.Count ? model.Textures[i].Name : $"material_{i}";
+
         foreach (var va in VertexArrayDraws.Collect(model))
         {
             var mesh = new RigidMeshBuilder($"{meshPrefix}_{va.VAIndex}");
+            StagedRigidMeshBuilder? stagedMesh = null;
+            var layers = new JsonArray();
+            var seenLayers = new HashSet<(int, int, int)>();
 
             foreach (var (group, ia) in va.Draws)
             {
                 if (group.Stage1TexIndex >= 0)
-                    throw new NotSupportedException("staged rigid draw");
+                {
+                    var stagedVertices = va.Vertices.Select(v => new StagedRigidVertexBuilder(
+                        Geometry(v, group.BonePalette, boneGlobals),
+                        new VertexTexture3(ExportUV(v.U, v.V), ExportUV(v.UEye, v.VEye), ExportUV(v.UEyelid, v.VEyelid))))
+                        .ToList();
+                    stagedMesh ??= new StagedRigidMeshBuilder($"{meshPrefix}_{va.VAIndex}_staged");
+                    AddTriangles(stagedMesh.UsePrimitive(MaterialFor(materials, group)), stagedVertices, ia.Indices, group.Topology);
+
+                    if (seenLayers.Add((group.MaterialIndex, group.Stage1TexIndex, group.Stage2TexIndex)))
+                        layers.Add(new JsonObject
+                        {
+                            ["stage0"] = TextureName(group.MaterialIndex),
+                            ["stage1"] = TextureName(group.Stage1TexIndex),
+                            ["stage2"] = group.Stage2TexIndex >= 0 ? TextureName(group.Stage2TexIndex) : null,
+                        });
+                    continue;
+                }
 
                 var vertices = va.Vertices.Select(v => new RigidVertexBuilder(
                     Geometry(v, group.BonePalette, boneGlobals),
@@ -167,10 +199,21 @@ public static class SceneExporter
                 AddTriangles(mesh.UsePrimitive(MaterialFor(materials, group)), vertices, ia.Indices, group.Topology);
             }
 
+            if (mesh.Primitives.Count > 0)
+                AddRigid(mesh, $"{meshPrefix}_{va.VAIndex}");
+            if (stagedMesh is not null)
+            {
+                stagedMesh.Extras = new JsonObject { ["sfLayers"] = layers };
+                AddRigid(stagedMesh, $"{meshPrefix}_{va.VAIndex}_staged");
+            }
+        }
+
+        void AddRigid(IMeshBuilder<MaterialBuilder> mesh, string nodeName)
+        {
             if (parent is null)
                 scene.AddRigidMesh(mesh, Matrix4x4.Identity);
             else
-                scene.AddRigidMesh(mesh, parent.CreateNode($"{meshPrefix}_{va.VAIndex}"));
+                scene.AddRigidMesh(mesh, parent.CreateNode(nodeName));
         }
     }
 

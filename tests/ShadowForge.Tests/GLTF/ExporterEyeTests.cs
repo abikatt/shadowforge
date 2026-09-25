@@ -139,12 +139,16 @@ public sealed class ExporterEyeTests
     }
 
     [Fact]
-    public void StagedRigidGroup_Throws()
+    public void StagedRigidGroup_ExportsToStagedMesh()
     {
         var model = BuildStagedModel();
         model.Bones.Clear();
-        var ex = Record.Exception(() => ExportAndLoad(model));
-        Assert.IsType<NotSupportedException>(ex);
+
+        var gltf = ExportAndLoad(model);
+
+        var staged = Assert.Single(gltf.LogicalMeshes, m => m.Name == "mesh_0_staged");
+        Assert.NotNull(Assert.Single(staged.Primitives).GetVertexAccessor("TEXCOORD_2"));
+        Assert.Empty(gltf.LogicalSkins);
     }
 
     /// <summary>
