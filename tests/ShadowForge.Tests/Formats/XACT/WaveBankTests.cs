@@ -163,6 +163,95 @@ public sealed class WaveBankTests
     }
 
     [Fact]
+    public void ReplaceEntry_Xma_TakesTheFileAndItsSeekTable()
+    {
+        var bank = WaveBank.Read(BuildBank(), "synthetic");
+        bank.SeekTables = WaveBank.WriteSeekTables([null, [12000u], null]);
+        var xma = XmaFile.ReadFile(XmaFileTests.ToneStereo);
+
+        bank.ReplaceEntry(1, xma);
+        var rebuilt = WaveBank.Read(bank.Write(), "rebuilt");
+
+        var replaced = rebuilt.Entries[1];
+        Assert.Equal(xma.Format, replaced.Format);
+        Assert.Equal(xma.Data, replaced.Data);
+        Assert.Equal(240640u, replaced.DurationSamples);
+        Assert.Equal(384u, replaced.LoopRegionStartSample);
+        Assert.Equal(240000u, replaced.LoopRegionTotalSamples);
+        var tables = rebuilt.ReadSeekTables();
+        Assert.Null(tables[0]);
+        Assert.Equal(xma.SeekTable, tables[1]);
+        Assert.Null(tables[2]);
+    }
+
+    [Fact]
+    public void ReplaceEntry_XmaIntoABankWithoutSeekTables_MarksTheOthersAsHavingNone()
+    {
+        var bank = WaveBank.Read(BuildBank(), "synthetic");
+        bank.SeekTables = [];
+
+        bank.ReplaceEntry(0, XmaFile.ReadFile(XmaFileTests.ToneStereo));
+
+        Assert.Equal(WaveBank.NoSeekTable, BigEndian.ReadUInt32(bank.SeekTables, 4));
+        Assert.Equal(WaveBank.NoSeekTable, BigEndian.ReadUInt32(bank.SeekTables, 8));
+        Assert.Equal([158208u, 240640u], WaveBank.Read(bank.Write(), "rebuilt").ReadSeekTables()[0]!);
+    }
+
+    /// <summary>
+    /// The retail layout leaves only the space up to the first 2048 boundary for the seek
+    /// tables, so a long replacement pushes the wave data to the next one.
+    /// </summary>
+    [Fact]
+    public void Write_SeekTablesPastTheWaveData_MovesTheWaveDataBack()
+    {
+        var bank = WaveBank.Read(BuildBank(), "synthetic");
+        var tables = new uint[]?[] { null, Enumerable.Range(1, 600).Select(i => (uint)i * 512).ToArray(), null };
+        bank.SeekTables = WaveBank.WriteSeekTables(tables);
+
+        byte[] written = bank.Write();
+        var rebuilt = WaveBank.Read(written, "rebuilt");
+
+        Assert.Equal(4096u, rebuilt.SegmentOffsets[WaveBank.SegmentEntryWaveData]);
+        Assert.Equal(tables[1], rebuilt.ReadSeekTables()[1]);
+        Assert.Equal(bank.BankData, rebuilt.BankData);
+        for (int i = 0; i < bank.Entries.Count; i++)
+            Assert.Equal(bank.Entries[i].Data, rebuilt.Entries[i].Data);
+    }
+
+    [SkippableFact]
+    public void SeekTables_ShippedBank_RoundTripThroughTheirEntries()
+    {
+        var bank = WaveBank.Read(RetailData.Read(ShippedXmaBank), "fdenm.xwb");
+        var tables = bank.ReadSeekTables();
+
+        Assert.All(tables, Assert.NotNull);
+        Assert.All(tables.Select((t, i) => (t!, bank.Entries[i])), p => Assert.Equal(p.Item2.DurationSamples, p.Item1[^1]));
+        Assert.Equal(bank.SeekTables, WaveBank.WriteSeekTables(tables));
+    }
+
+    [SkippableFact]
+    public void ReplaceEntry_ShippedBankWithXma_KeepsTheOtherEntries()
+    {
+        byte[] original = RetailData.Read(ShippedXmaBank);
+        var bank = WaveBank.Read(original, "fdenm.xwb");
+        var before = WaveBank.Read(original, "fdenm.xwb");
+
+        bank.ReplaceEntry(5, XmaFile.ReadFile(XmaFileTests.ToneStereo));
+        var rebuilt = WaveBank.Read(bank.Write(), "rebuilt");
+
+        var beforeTables = before.ReadSeekTables();
+        var afterTables = rebuilt.ReadSeekTables();
+        for (int i = 0; i < before.Entries.Count; i++)
+        {
+            if (i == 5) continue;
+            Assert.Equal(before.Entries[i].Data, rebuilt.Entries[i].Data);
+            Assert.Equal(before.Entries[i].Format, rebuilt.Entries[i].Format);
+            Assert.Equal(beforeTables[i], afterTables[i]);
+        }
+        Assert.Equal([158208u, 240640u], afterTables[5]!);
+    }
+
+    [Fact]
     public void Read_WrongSignature_Throws()
     {
         var data = BuildBank();

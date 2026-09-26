@@ -33,6 +33,90 @@ public static class AudioTools
     }
 
     /// <summary>
+    /// The names the Xbox 360 SDK's XMA encoder ships under.
+    /// </summary>
+    public static readonly string[] XmaEncoderNames = ["xmaencode2008.exe", "xmaencode.exe"];
+
+    /// <summary>
+    /// The XMA encoder to use: the saved path if it still exists, else one beside ShadowForge
+    /// or in its tools folder, else one on PATH. It is part of the Xbox 360 SDK, so it cannot
+    /// ship with ShadowForge and the user points to their own copy.
+    /// </summary>
+    public static string? FindXmaEncoder(string? saved)
+    {
+        if (saved is { Length: > 0 } && File.Exists(saved)) return saved;
+        var dirs = new[] { AppContext.BaseDirectory, Path.Combine(AppContext.BaseDirectory, "tools") }
+            .Concat((Environment.GetEnvironmentVariable("PATH") ?? "").Split(Path.PathSeparator));
+        foreach (string dir in dirs)
+        {
+            foreach (string name in XmaEncoderNames)
+            {
+                try
+                {
+                    string candidate = Path.Combine(dir.Trim(), name);
+                    if (dir.Length > 0 && File.Exists(candidate)) return candidate;
+                }
+                catch (ArgumentException)
+                {
+                }
+            }
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Encodes 16-bit PCM to XMA the way XACT wants it (xmaencode /S: looping, 64 KiB blocks)
+    /// and returns the encoder's file.
+    /// </summary>
+    public static byte[] EncodeXma(WavFile wav, string encoder, int quality = DefaultXmaQuality)
+    {
+        string dir = Path.Combine(Path.GetTempPath(), "ShadowForge", "xmaencode-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            Directory.CreateDirectory(dir);
+            string input = Path.Combine(dir, "in.wav");
+            string output = Path.Combine(dir, "out.xma");
+            wav.WriteFile(input);
+
+            var psi = new ProcessStartInfo(encoder)
+            {
+                UseShellExecute = false,
+                CreateNoWindow = true,
+                RedirectStandardOutput = true,
+                RedirectStandardError = true,
+                WorkingDirectory = dir,
+            };
+            foreach (string a in new[] { input, "/S", "/Q", quality.ToString(), "/T", output }) psi.ArgumentList.Add(a);
+            using var process = Process.Start(psi) ?? throw new InvalidOperationException("The XMA encoder did not start.");
+            var errors = process.StandardError.ReadToEndAsync();
+            string messages = process.StandardOutput.ReadToEnd() + errors.Result;
+            process.WaitForExit();
+            if (process.ExitCode != 0 || !File.Exists(output))
+            {
+                string reason = messages.Split('\n').Select(l => l.Trim()).FirstOrDefault(l => l.Length > 0)
+                                ?? $"exit {process.ExitCode}";
+                throw new InvalidDataException("XMA encoder: " + reason);
+            }
+            byte[] encoded = File.ReadAllBytes(output);
+            XmaFile.Read(encoded, "encoded XMA");
+            return encoded;
+        }
+        finally
+        {
+            try
+            {
+                Directory.Delete(dir, recursive: true);
+            }
+            catch (IOException)
+            {
+            }
+        }
+    }
+
+    /// <summary>xmaencode's own default quality, from 1 (poor) to 100 (best).</summary>
+    public const int DefaultXmaQuality = 60;
+
+    /// <summary>
     /// Writes a wave as a 16-bit PCM .wav. PCM is written directly; XMA is decoded by FFmpeg,
     /// which must be given.
     /// </summary>

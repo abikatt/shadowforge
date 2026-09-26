@@ -4,7 +4,6 @@ using Avalonia.Platform.Storage;
 using Avalonia.Threading;
 using ShadowForge.Formats.XACT;
 using ShadowForge.GameData.Audio;
-using ShadowForge.GameData.Mods;
 
 namespace ShadowForge.Workbench;
 
@@ -15,8 +14,17 @@ public sealed record BankRow(SoundBankEntry Entry)
     public string Detail => $"{Entry.Folder} · {Entry.Size / 1024.0 / 1024.0:0.0} MB";
 }
 
-public sealed record WaveRow(SoundWave Wave, string Status)
+public sealed record WaveRow(SoundWave Wave, WaveReplacement? Replacement)
 {
+    public bool IsReplaced => Replacement is not null;
+
+    public string Status => Replacement switch
+    {
+        null => "",
+        { IsXma: true } => "replaced · XMA",
+        _ => "replaced · lossless",
+    };
+
     public string Title => $"#{Wave.Index:D3}" + (Wave.Cues.Count > 0 ? "  " + string.Join(", ", Wave.Cues) : "");
 
     public string Detail
@@ -32,21 +40,28 @@ public sealed record WaveRow(SoundWave Wave, string Status)
 }
 
 /// <summary>
-/// The Audio tab: the game's wave banks, whose waves can be played, exported as .wav, and
-/// replaced in a copy of the bank inside a mod. Replacing again builds on the mod's copy, so
-/// earlier replacements are kept.
+/// The Audio tab: the game's wave banks, whose waves can be played, exported as .wav and
+/// replaced. A replacement is saved to the audio replacements folder, lossless or as XMA, and
+/// Build into mod writes the bank with all of them into the mod, always as XMA.
 /// </summary>
 public partial class MainWindow
 {
     private const string AllFolders = "All folders";
 
+    private const string NeedsXmaEncoder =
+        "needs the XMA encoder (xmaencode.exe from the Xbox 360 SDK), which cannot be bundled with ShadowForge. "
+        + "Point to it in Settings.";
+
     private SoundBankCatalog? _soundCatalog;
     private IReadOnlyList<BankRow> _banks = [];
     private BankRow? _selectedBank;
     private WaveBank? _gameBank;
-    private WaveBank? _modBank;
 
     private string? Ffmpeg => AudioTools.FindFfmpeg(_settings.FfmpegPath);
+
+    private string? XmaEncoder => AudioTools.FindXmaEncoder(_settings.XmaEncoderPath);
+
+    private AudioWorkspace AudioWork => new(_settings.AudioWorkRoot);
 
     private void SetUpAudio()
     {
@@ -77,6 +92,14 @@ public partial class MainWindow
             _settings.AudioEnableOnBuild = AudioEnableOnBuild.IsChecked == true;
             _settings.Save();
         };
+        AudioSaveXma.IsCheckedChanged += (_, _) =>
+        {
+            if (!AudioSaveXma.IsEnabled) return;
+            _settings.AudioSaveAsXma = AudioSaveXma.IsChecked == true;
+            _settings.Save();
+        };
+        ShowXmaEncoderState();
+        BuildBankButton.Click += OnBuildBank;
         StopAudioButton.Click += (_, _) => AudioTools.Stop();
         ExportBankButton.Click += OnExportBank;
         WaveList.AddHandler(Button.ClickEvent, OnWaveButton);
@@ -101,22 +124,52 @@ public partial class MainWindow
         BankCount.Text = CountText(rows.Count, _banks.Count);
     }
 
-    private string ModBankPath(BankRow row) =>
-        Path.Combine(_modCatalog!.ModsRoot, _settings.AudioModName, row.Entry.VfsPath);
+    /// <summary>
+    /// Offers XMA only while the encoder is there, keeping the saved choice for when it comes
+    /// back, and says why when it is not.
+    /// </summary>
+    private void ShowXmaEncoderState()
+    {
+        bool available = XmaEncoder is not null;
+        AudioSaveXma.IsEnabled = available;
+        ToolTip.SetTip(AudioSaveXma, available
+            ? "Encode replacements to XMA as you save them, so what you play back is what the game will play."
+            : "Saving as XMA " + NeedsXmaEncoder);
+        bool xma = available && _settings.AudioSaveAsXma;
+        AudioSaveXma.IsChecked = xma;
+        AudioSaveLossless.IsChecked = !xma;
+        ShowBuildState();
+    }
+
+    /// <summary>
+    /// Build into mod is greyed out while a lossless replacement waits for an encoder that is
+    /// not there, since the mod always carries XMA.
+    /// </summary>
+    private void ShowBuildState()
+    {
+        bool blocked = _selectedBank is { } bank && XmaEncoder is null && AudioWork.NeedsEncoder(bank.Entry);
+        BuildBankButton.IsEnabled = !blocked;
+        ToolTip.SetTip(BuildBankButton, blocked
+            ? "Building encodes the lossless replacements to XMA, which " + NeedsXmaEncoder
+            : "Write this bank with all of its replacements into the mod, as XMA. With none left, the mod's copy is removed.");
+    }
 
     private void ShowBankDetails(BankRow? row)
     {
         _selectedBank = row;
         NoBankText.IsVisible = row is null;
         BankDetailsPanel.IsVisible = row is not null;
-        _gameBank = _modBank = null;
+        _gameBank = null;
         if (row is null || _soundCatalog is not { } catalog) return;
+        ShowBuildState();
 
         BankTitle.Text = row.Name;
         BankInfo.Text = $"{row.Entry.VfsPath} · {row.Entry.Size / 1024.0 / 1024.0:0.0} MB";
         WavesHeader.Text = "Loading waves…";
         WaveList.ItemsSource = null;
-        string? modPath = _modCatalog is not null ? ModBankPath(row) : null;
+        var work = AudioWork;
+        string modName = _settings.AudioModName;
+        string? modsRoot = _modCatalog?.ModsRoot;
 
         Task.Run(() =>
         {
@@ -124,17 +177,18 @@ public partial class MainWindow
             {
                 string path = catalog.FullPath(row.Entry);
                 var game = WaveBank.ReadFile(path);
-                var mod = modPath is not null && File.Exists(modPath) ? WaveBank.ReadFile(modPath) : null;
+                var replacements = work.Replacements(row.Entry);
                 var rows = SoundBankCatalog.Waves(game, path)
-                    .Select(w => new WaveRow(w, mod is not null && IsReplaced(game, mod, w.Index) ? "replaced in mod" : ""))
+                    .Select(w => new WaveRow(w, replacements.GetValueOrDefault(w.Index)))
                     .ToList();
+                bool built = modsRoot is not null && work.IsBuilt(row.Entry, modsRoot, modName);
                 PostBank(row, () =>
                 {
                     _gameBank = game;
-                    _modBank = mod;
                     WaveList.ItemsSource = rows;
-                    int replaced = rows.Count(r => r.Status.Length > 0);
-                    WavesHeader.Text = $"Waves ({rows.Count})" + (replaced > 0 ? $", {replaced} replaced in {_settings.AudioModName}" : "");
+                    int replaced = rows.Count(r => r.IsReplaced);
+                    WavesHeader.Text = $"Waves ({rows.Count})" + (replaced == 0 ? ""
+                        : $", {replaced} replaced" + (built ? $", built into {modName}" : ", not built into the mod yet"));
                     int xma = game.Entries.Count(e => e.Format.Tag == WaveFormatTag.XMA);
                     if (xma > 0 && Ffmpeg is null)
                         WavesHeader.Text += ". XMA waves need FFmpeg (see Settings) to play or export.";
@@ -146,12 +200,6 @@ public partial class MainWindow
             }
         });
     }
-
-    private static bool IsReplaced(WaveBank game, WaveBank mod, int index) =>
-        index < mod.Entries.Count
-        && (mod.Entries[index].Format != game.Entries[index].Format
-            || mod.Entries[index].Data.Length != game.Entries[index].Data.Length
-            || mod.Entries[index].DurationSamples != game.Entries[index].DurationSamples);
 
     private void PostBank(BankRow row, Action update) =>
         Dispatcher.UIThread.Post(() =>
@@ -165,18 +213,19 @@ public partial class MainWindow
         if (button.Classes.Contains("wavePlay")) PlayWave(bank, wave);
         else if (button.Classes.Contains("waveExport")) ExportWaves(bank, [wave]);
         else if (button.Classes.Contains("waveReplace")) ReplaceWave(bank, wave);
+        else if (button.Classes.Contains("waveRevert")) RevertWave(bank, wave);
     }
 
     /// <summary>
-    /// The entry to play or export: the mod's replacement when there is one, else the game's.
+    /// The entry to play or export: the saved replacement when there is one, else the game's.
+    /// A replacement is read from disk, so this runs off the UI thread.
     /// </summary>
-    private WaveBankEntry? EffectiveEntry(WaveRow wave) =>
-        wave.Status.Length > 0 && _modBank is { } mod ? mod.Entries[wave.Wave.Index]
-        : _gameBank?.Entries[wave.Wave.Index];
+    private static WaveBankEntry? EffectiveEntry(WaveBank? game, WaveRow wave) =>
+        wave.Replacement is { } replacement ? AudioWorkspace.LoadEntry(replacement) : game?.Entries[wave.Wave.Index];
 
     private void PlayWave(BankRow bank, WaveRow wave)
     {
-        if (EffectiveEntry(wave) is not { } entry) return;
+        var game = _gameBank;
         string? ffmpeg = Ffmpeg;
         string cache = Path.Combine(Path.GetTempPath(), "ShadowForge", "audio-play.wav");
         SetStatus($"Decoding {bank.Name} {wave.Title}…");
@@ -184,10 +233,12 @@ public partial class MainWindow
         {
             try
             {
+                if (EffectiveEntry(game, wave) is not { } entry) return;
                 AudioTools.Stop();
                 AudioTools.DecodeTo(entry, cache, ffmpeg);
                 AudioTools.Play(cache);
-                Dispatcher.UIThread.Post(() => SetStatus($"Playing {bank.Name} {wave.Title} ({wave.Detail})."));
+                string which = wave.Replacement is { } r ? $" (replacement, {(r.IsXma ? "XMA" : "lossless")})" : $" ({wave.Detail})";
+                Dispatcher.UIThread.Post(() => SetStatus($"Playing {bank.Name} {wave.Title}{which}."));
             }
             catch (Exception ex)
             {
@@ -204,7 +255,7 @@ public partial class MainWindow
 
     private void ExportWaves(BankRow bank, IReadOnlyList<WaveRow> waves)
     {
-        var entries = waves.Select(w => (Wave: w, Entry: EffectiveEntry(w))).Where(p => p.Entry is not null).ToList();
+        var game = _gameBank;
         string? ffmpeg = Ffmpeg;
         string dir = Path.Combine(_settings.AudioExportRoot, bank.Name);
         ExportBankButton.IsEnabled = false;
@@ -212,21 +263,21 @@ public partial class MainWindow
         {
             int done = 0;
             var failed = new List<string>();
-            foreach (var (wave, entry) in entries)
+            foreach (var wave in waves)
             {
                 string cue = wave.Wave.Cues.FirstOrDefault() is { } c ? "_" + SafeFileName(c) : "";
                 string path = Path.Combine(dir, $"{bank.Name}_{wave.Wave.Index:D3}{cue}.wav");
                 try
                 {
-                    AudioTools.DecodeTo(entry!, path, ffmpeg);
+                    AudioTools.DecodeTo(EffectiveEntry(game, wave)!, path, ffmpeg);
                     done++;
                 }
                 catch (Exception ex)
                 {
                     failed.Add($"{wave.Title}: {ex.Message}");
                 }
-                if (entries.Count > 1 && done % 5 == 0)
-                    Dispatcher.UIThread.Post(() => SetStatus($"Exporting {bank.Name}: {done} of {entries.Count}…"));
+                if (waves.Count > 1 && done % 5 == 0)
+                    Dispatcher.UIThread.Post(() => SetStatus($"Exporting {bank.Name}: {done} of {waves.Count}…"));
             }
             Dispatcher.UIThread.Post(() =>
             {
@@ -238,23 +289,20 @@ public partial class MainWindow
     }
 
     /// <summary>
-    /// Converts the chosen audio to 16-bit PCM with the original wave's channels and rate, and
-    /// writes it into the mod's copy of the bank, making that copy from the game's bank first.
+    /// Converts the chosen audio to 16-bit PCM with the original wave's channels and rate and
+    /// saves it as the wave's replacement, encoded to XMA when that is the chosen format.
     /// </summary>
     private async void ReplaceWave(BankRow bank, WaveRow wave)
     {
-        if (_modCatalog is not { } catalog)
+        if (_gameBank is not { } game) return;
+        bool asXma = AudioSaveXma.IsChecked == true;
+        string? encoder = XmaEncoder;
+        if (asXma && encoder is null)
         {
-            SetStatus(NeedsModsFolder);
+            ShowXmaEncoderState();
+            SetStatus("Saving as XMA " + NeedsXmaEncoder);
             return;
         }
-        string modName = AudioModName.Text?.Trim() ?? "";
-        if (!IsValidModName(modName))
-        {
-            SetStatus("Enter a mod name to replace into: letters, digits, spaces, '-' or '_'.");
-            return;
-        }
-        if (_gameBank is not { } game || _soundCatalog is not { } sounds) return;
 
         var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
         {
@@ -266,45 +314,100 @@ public partial class MainWindow
         });
         if (picked is not [var file, ..] || file.TryGetLocalPath() is not { } source) return;
 
-        _settings.AudioModName = modName;
-        _settings.Save();
         var original = game.Entries[wave.Wave.Index];
         string? ffmpeg = Ffmpeg;
-        bool enable = AudioEnableOnBuild.IsChecked == true;
-        string gamePath = sounds.FullPath(bank.Entry);
-        string modPath = ModBankPath(bank);
-        SetStatus($"Replacing {bank.Name} {wave.Title}…");
+        var work = AudioWork;
+        SetStatus($"{(asXma ? "Encoding" : "Saving")} the replacement for {bank.Name} {wave.Title}…");
         try
         {
-            var (before, after, samples) = await Task.Run(() =>
+            var (saved, seconds) = await Task.Run(() =>
             {
                 var wav = AudioTools.LoadAsPcm(source, original.Format.Channels, original.Format.SamplesPerSecond, ffmpeg);
-                var target = WaveBank.ReadFile(File.Exists(modPath) ? modPath : gamePath);
-                long sizeBefore = new FileInfo(File.Exists(modPath) ? modPath : gamePath).Length;
-                target.ReplaceEntry(wave.Wave.Index, wav);
-                byte[] written = target.Write();
-                Directory.CreateDirectory(Path.GetDirectoryName(modPath)!);
-                File.WriteAllBytes(modPath, written);
-
-                string toml = Path.Combine(catalog.ModsRoot, modName, "mod.toml");
-                if (!File.Exists(toml))
-                    ModDeployer.WriteToml(toml, new ModMetadata(modName, null, null, "Audio replacements"));
-                return (sizeBefore, (long)written.Length, wav.FrameCount);
+                var replacement = work.Save(bank.Entry, wave.Wave.Index, wav, asXma ? encoder : null);
+                return (replacement, wav.FrameCount / (double)wav.SampleRate);
             });
-
-            string enabled = EnableIfAsked(catalog, modName, enable) ? " and enabled it" : "";
-            RefreshMods(modName);
-            string codec = original.Format.Tag == WaveFormatTag.PCM
-                ? ""
-                : $" The wave is now PCM instead of {original.Format.Tag}, which has not been tried in the game yet;";
-            SetStatus($"Replaced {bank.Name} {wave.Title} in mod {modName}{enabled}.{codec}"
-                + $" the bank went from {before / 1024.0 / 1024.0:0.0} to {after / 1024.0 / 1024.0:0.0} MB"
-                + $" ({samples / (double)original.Format.SamplesPerSecond:0.0} s of audio).", Path.GetDirectoryName(modPath));
+            string form = saved.IsXma ? "as XMA" : "lossless";
+            SetStatus($"Saved the replacement for {bank.Name} {wave.Title} {form} ({seconds:0.0} s)."
+                + " Use Build into mod to put it in the game.", Path.GetDirectoryName(saved.Path));
             ShowBankDetails(bank);
         }
         catch (Exception ex)
         {
             SetStatus($"Could not replace {wave.Title}: {ex.Message}");
+        }
+    }
+
+    private void RevertWave(BankRow bank, WaveRow wave)
+    {
+        try
+        {
+            AudioWork.Revert(bank.Entry, wave.Wave.Index);
+            SetStatus($"Reverted {bank.Name} {wave.Title}. Build into mod again to take it out of the mod.");
+            ShowBankDetails(bank);
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
+        {
+            SetStatus($"Could not revert {wave.Title}: {ex.Message}");
+        }
+    }
+
+    /// <summary>
+    /// Writes the game's bank with every saved replacement into the mod, encoding the lossless
+    /// ones to XMA.
+    /// </summary>
+    private async void OnBuildBank(object? sender, RoutedEventArgs e)
+    {
+        if (_selectedBank is not { } bank || _soundCatalog is not { } sounds) return;
+        if (_modCatalog is not { } catalog)
+        {
+            SetStatus(NeedsModsFolder);
+            return;
+        }
+        string modName = AudioModName.Text?.Trim() ?? "";
+        if (!IsValidModName(modName))
+        {
+            SetStatus("Enter a mod name to build into: letters, digits, spaces, '-' or '_'.");
+            return;
+        }
+        var work = AudioWork;
+        string? encoder = XmaEncoder;
+        if (encoder is null && work.NeedsEncoder(bank.Entry))
+        {
+            ShowBuildState();
+            SetStatus("Building lossless replacements into a mod encodes them to XMA, which " + NeedsXmaEncoder);
+            return;
+        }
+
+        _settings.AudioModName = modName;
+        _settings.Save();
+        bool enable = AudioEnableOnBuild.IsChecked == true;
+        string gamePath = sounds.FullPath(bank.Entry);
+        BuildBankButton.IsEnabled = false;
+        SetStatus($"Building {bank.Name} into mod {modName}…");
+        try
+        {
+            var result = await Task.Run(() => work.Build(bank.Entry, gamePath, catalog.ModsRoot, modName, encoder));
+            if (result.Replaced == 0)
+            {
+                RefreshMods(modName);
+                SetStatus($"{bank.Name} has no replacements, so mod {modName} no longer carries it.");
+                return;
+            }
+
+            string enabled = EnableIfAsked(catalog, modName, enable) ? " and enabled it" : "";
+            RefreshMods(modName);
+            string encoded = result.Encoded > 0 ? $", encoding {result.Encoded} to XMA" : "";
+            SetStatus($"Built {bank.Name} with {result.Replaced} replacement(s) into mod {modName}{enabled}{encoded};"
+                + $" the bank went from {result.SizeBefore / 1024.0 / 1024.0:0.0} to {result.SizeAfter / 1024.0 / 1024.0:0.0} MB.",
+                Path.GetDirectoryName(result.BankPath));
+        }
+        catch (Exception ex)
+        {
+            SetStatus($"Could not build {bank.Name}: {ex.Message}");
+        }
+        finally
+        {
+            ShowBankDetails(bank);
         }
     }
 

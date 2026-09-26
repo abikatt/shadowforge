@@ -431,3 +431,6 @@ FodyWeavers.xsd
 *.msm
 *.msp
 xmaencode2008.exe
+
+# Local copies of tools that cannot be redistributed
+/tools/

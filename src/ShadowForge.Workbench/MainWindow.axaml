@@ -355,11 +355,22 @@
                     <Button x:Name="ExportBankButton" Grid.Column="2" Content="Export all as .wav"
                             HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
                   </Grid>
-                  <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="Replace into mod" Classes="toolLabel" />
-                    <TextBox x:Name="AudioModName" MinWidth="160" />
-                    <CheckBox x:Name="AudioEnableOnBuild" Content="Enable after replacing" />
+                  <StackPanel Orientation="Horizontal" Spacing="12">
+                    <TextBlock Text="Save replacements as" Classes="toolLabel" />
+                    <RadioButton x:Name="AudioSaveLossless" GroupName="AudioSaveFormat" Content="Lossless (PCM)"
+                                 ToolTip.Tip="Keep replacements as 16-bit PCM .wav. Building the mod encodes them to XMA." />
+                    <RadioButton x:Name="AudioSaveXma" GroupName="AudioSaveFormat" Content="Lossy (XMA)"
+                                 ToolTip.ShowOnDisabled="True" />
                   </StackPanel>
+                  <DockPanel>
+                    <Button x:Name="BuildBankButton" DockPanel.Dock="Right" Content="Build into mod" Margin="8,0,0,0"
+                            ToolTip.ShowOnDisabled="True" />
+                    <StackPanel Orientation="Horizontal" Spacing="8">
+                      <TextBlock Text="Mod" Classes="toolLabel" />
+                      <TextBox x:Name="AudioModName" MinWidth="160" />
+                      <CheckBox x:Name="AudioEnableOnBuild" Content="Enable after building" />
+                    </StackPanel>
+                  </DockPanel>
                   <TextBlock x:Name="WavesHeader" Text="Waves" FontWeight="SemiBold" Margin="0,4,0,0" />
                 </StackPanel>
                 <ScrollViewer>
@@ -378,7 +389,10 @@
                             <Button Classes="wavePlay" Content="Play" Padding="10,3" FontSize="12" />
                             <Button Classes="waveExport" Content="Export" Padding="10,3" FontSize="12" />
                             <Button Classes="waveReplace" Content="Replace…" Padding="10,3" FontSize="12"
-                                    ToolTip.Tip="Replace this wave with an audio file, in a copy of the bank in the mod above" />
+                                    ToolTip.Tip="Save an audio file as this wave's replacement. Build into mod puts it in the game." />
+                            <Button Classes="waveRevert" Content="Revert" Padding="10,3" FontSize="12"
+                                    IsVisible="{Binding IsReplaced}"
+                                    ToolTip.Tip="Delete this wave's replacement. Build into mod again to update the mod." />
                           </StackPanel>
                         </Grid>
                       </DataTemplate>
@@ -443,6 +457,18 @@
                   <TextBox x:Name="SettingsFfmpegPath" IsReadOnly="True" />
                 </DockPanel>
               </StackPanel>
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="XMA encoder" />
+                <TextBlock Classes="settingHelp"
+                           Text="xmaencode.exe from the Xbox 360 SDK encodes replacement audio to XMA, the format the game's banks use. It is Microsoft's and cannot be bundled with ShadowForge. Without it, replacements can only be saved as lossless .wav and cannot be built into a mod." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseXmaButton" Content="Browse…" />
+                    <Button x:Name="SettingsDetectXmaButton" Content="Detect" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsXmaPath" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
             </StackPanel>
 
             <StackPanel Spacing="14">
@@ -502,6 +528,17 @@
                     <Button x:Name="SettingsOpenAudioButton" Content="Open" />
                   </StackPanel>
                   <TextBox x:Name="SettingsAudioRoot" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Audio replacements" />
+                <TextBlock Classes="settingHelp" Text="Replace saves waves here, as .wav or .xma, until Build into mod puts them in the game." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseAudioWorkButton" Content="Browse…" />
+                    <Button x:Name="SettingsOpenAudioWorkButton" Content="Open" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsAudioWorkRoot" IsReadOnly="True" />
                 </DockPanel>
               </StackPanel>
               <CheckBox x:Name="SettingsExportTextures" Content="Include textures in map exports" />

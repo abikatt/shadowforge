@@ -147,6 +147,31 @@ public partial class MainWindow
             }
         };
 
+        SettingsBrowseAudioWorkButton.Click += async (_, _) =>
+        {
+            if (await PickFolder("Choose where replacement audio is kept") is { } path)
+            {
+                _settings.AudioWorkRoot = path;
+                SaveSettings();
+                ShowBankDetails(_selectedBank);
+            }
+        };
+        SettingsOpenAudioWorkButton.Click += (_, _) => OpenFolder(_settings.AudioWorkRoot);
+        SettingsBrowseXmaButton.Click += async (_, _) =>
+        {
+            var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Locate the XMA encoder (xmaencode.exe)",
+                FileTypeFilter = [new FilePickerFileType("XMA encoder") { Patterns = ["xmaencode*.exe"] }],
+            });
+            if (picked is [var file, ..] && file.TryGetLocalPath() is { } path) SaveXmaEncoderPath(path);
+        };
+        SettingsDetectXmaButton.Click += (_, _) =>
+        {
+            if (AudioTools.FindXmaEncoder(null) is { } found) SaveXmaEncoderPath(found);
+            else SetStatus("No xmaencode.exe found beside ShadowForge or on PATH. Use Browse… to pick it.");
+        };
+
         SettingsExportTextures.IsCheckedChanged += (_, _) =>
         {
             if (_updatingSettings) return;
@@ -180,10 +205,16 @@ public partial class MainWindow
         SettingsAudioRoot.Text = _settings.AudioExportRoot;
         SettingsFfmpegPath.Text = _settings.FfmpegPath
             ?? (AudioTools.FindFfmpeg(null) is { } found ? $"Detected: {found}" : "Not found. Pick ffmpeg.exe to hear and replace XMA audio.");
+        SettingsAudioWorkRoot.Text = _settings.AudioWorkRoot;
+        SettingsXmaPath.Text = _settings.XmaEncoderPath
+            ?? (AudioTools.FindXmaEncoder(null) is { } encoder
+                ? $"Detected: {encoder}"
+                : "Not found. Pick xmaencode.exe to save replacements as XMA and build them into mods.");
         SettingsExportTextures.IsChecked = _settings.ExportTextures;
         SettingsTextureQualityBox.SelectedItem =
             TextureQualities.FirstOrDefault(q => q.MaxSize == _settings.PreviewTextureSize) ?? TextureQualities[1];
         _updatingSettings = false;
+        ShowXmaEncoderState();
     }
 
     private void SaveSettings()
@@ -197,6 +228,14 @@ public partial class MainWindow
         _settings.BlenderPath = path;
         SaveSettings();
         SetStatus("Blender: " + path);
+    }
+
+    private void SaveXmaEncoderPath(string path)
+    {
+        _settings.XmaEncoderPath = path;
+        SaveSettings();
+        ShowBankDetails(_selectedBank);
+        SetStatus("XMA encoder: " + path);
     }
 
     private async Task<string?> PickFolder(string title)

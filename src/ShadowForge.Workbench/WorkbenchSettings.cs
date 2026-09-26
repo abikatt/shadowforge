@@ -71,7 +71,25 @@ public sealed class WorkbenchSettings
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "audio");
 
     /// <summary>
-    /// The mod that Replace writes wave banks into, and whether it enables that mod.
+    /// The Xbox 360 SDK's xmaencode.exe, which encodes replacement audio to XMA, or null to
+    /// detect it. It cannot ship with ShadowForge.
+    /// </summary>
+    public string? XmaEncoderPath { get; set; }
+
+    /// <summary>
+    /// Where replacement waves are kept until they are built into a mod, one folder per bank.
+    /// </summary>
+    public string AudioWorkRoot { get; set; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "audio_replacements");
+
+    /// <summary>
+    /// Whether Replace saves replacements as XMA (lossy, what the build writes) rather than
+    /// lossless .wav. Only honoured while the XMA encoder is available.
+    /// </summary>
+    public bool AudioSaveAsXma { get; set; }
+
+    /// <summary>
+    /// The mod that Build writes wave banks into, and whether it enables that mod.
     /// </summary>
     public string AudioModName { get; set; } = "audio_edits";
 

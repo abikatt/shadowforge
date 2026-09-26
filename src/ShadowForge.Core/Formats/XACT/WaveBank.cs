@@ -47,9 +47,12 @@ public sealed class WaveBank
 
     /// <summary>
     /// The SEEKTABLES segment verbatim. Only XMA entries use it, so a PCM replacement leaves
-    /// it unchanged.
+    /// it unchanged; an XMA replacement rewrites it (see <see cref="ReplaceEntry(int, XmaFile)"/>).
     /// </summary>
     public byte[] SeekTables { get; set; } = [];
+
+    /// <summary>Marks an entry without a seek table in the SEEKTABLES offset list.</summary>
+    public const uint NoSeekTable = 0xFFFFFFFF;
 
     /// <summary>The ENTRYNAMES segment verbatim, empty in retail Blue Dragon banks.</summary>
     public byte[] EntryNames { get; set; } = [];
@@ -180,14 +183,96 @@ public sealed class WaveBank
     }
 
     /// <summary>
+    /// Points an entry at encoded XMA, as xmaencode /S writes it, and puts the file's seek
+    /// table in the entry's place in SEEKTABLES. The entry takes the file's loop, as retail
+    /// XMA entries all carry one.
+    /// </summary>
+    public void ReplaceEntry(int index, XmaFile xma)
+    {
+        if (index < 0 || index >= Entries.Count)
+            throw new ArgumentOutOfRangeException(nameof(index), index,
+                $"Wave index must be 0-{Entries.Count - 1}.");
+
+        var tables = ReadSeekTables();
+        tables[index] = xma.SeekTable;
+        SeekTables = WriteSeekTables(tables);
+
+        var replacement = xma.ToEntry();
+        var entry = Entries[index];
+        entry.Format = replacement.Format;
+        entry.Data = replacement.Data;
+        entry.Flags = 0;
+        entry.DurationSamples = replacement.DurationSamples;
+        entry.LoopRegionStartSample = replacement.LoopRegionStartSample;
+        entry.LoopRegionTotalSamples = replacement.LoopRegionTotalSamples;
+    }
+
+    /// <summary>
+    /// Each entry's seek table, null for an entry without one. SEEKTABLES starts with one
+    /// offset per entry, relative to the end of that list, to a count followed by that many
+    /// running sample counts. A bank without the segment has no tables.
+    /// </summary>
+    public uint[]?[] ReadSeekTables()
+    {
+        var tables = new uint[]?[Entries.Count];
+        if (SeekTables.Length == 0) return tables;
+
+        int listSize = Entries.Count * 4;
+        if (SeekTables.Length < listSize)
+            throw new InvalidDataException($"SEEKTABLES is {SeekTables.Length} bytes, too short for {Entries.Count} entries");
+        for (int i = 0; i < Entries.Count; i++)
+        {
+            uint offset = BigEndian.ReadUInt32(SeekTables, i * 4);
+            if (offset == NoSeekTable) continue;
+            long at = listSize + (long)offset;
+            if (at + 4 > SeekTables.Length)
+                throw new InvalidDataException($"Entry {i}'s seek table starts past the end of SEEKTABLES");
+            uint count = BigEndian.ReadUInt32(SeekTables, (int)at);
+            if (at + 4 + count * 4L > SeekTables.Length)
+                throw new InvalidDataException($"Entry {i}'s seek table runs past the end of SEEKTABLES");
+            var table = new uint[count];
+            for (int j = 0; j < count; j++) table[j] = BigEndian.ReadUInt32(SeekTables, (int)(at + 4 + j * 4));
+            tables[i] = table;
+        }
+        return tables;
+    }
+
+    /// <summary>
+    /// The SEEKTABLES segment for the given tables, in entry order as retail banks lay them out.
+    /// </summary>
+    public static byte[] WriteSeekTables(IReadOnlyList<uint[]?> tables)
+    {
+        int listSize = tables.Count * 4;
+        var output = new byte[listSize + tables.Sum(t => t is null ? 0 : 4 + t.Length * 4)];
+        int at = listSize;
+        for (int i = 0; i < tables.Count; i++)
+        {
+            if (tables[i] is not { } table)
+            {
+                BigEndian.WriteUInt32(output, i * 4, NoSeekTable);
+                continue;
+            }
+            BigEndian.WriteUInt32(output, i * 4, (uint)(at - listSize));
+            BigEndian.WriteUInt32(output, at, (uint)table.Length);
+            for (int j = 0; j < table.Length; j++) BigEndian.WriteUInt32(output, at + 4 + j * 4, table[j]);
+            at += 4 + table.Length * 4;
+        }
+        return output;
+    }
+
+    /// <summary>
     /// Lays the play regions out again as a running offset padded to <see cref="Alignment"/>.
     /// Every segment other than the entry metadata and the wave data is written back verbatim
-    /// at its original offset.
+    /// at its original offset, unless a seek table grew past the space before the wave data;
+    /// then the segments are packed one after another and the wave data follows at the next
+    /// alignment boundary.
     /// </summary>
     public byte[] Write()
     {
         uint alignment = Alignment;
-        uint waveDataOffset = SegmentOffsets[SegmentEntryWaveData];
+        var offsets = (uint[])SegmentOffsets.Clone();
+        if (!FitsLayout(offsets)) offsets = PackedLayout(alignment);
+        uint waveDataOffset = offsets[SegmentEntryWaveData];
 
         var playOffsets = new uint[Entries.Count];
         long running = 0;
@@ -212,15 +297,15 @@ public sealed class WaveBank
 
         for (int i = 0; i < SegmentCount; i++)
         {
-            BigEndian.WriteUInt32(output, SegmentTableOffset + i * 8, SegmentOffsets[i]);
+            BigEndian.WriteUInt32(output, SegmentTableOffset + i * 8, offsets[i]);
             BigEndian.WriteUInt32(output, SegmentTableOffset + i * 8 + 4, lengths[i]);
         }
 
-        CopySegment(output, SegmentOffsets[SegmentBankData], BankData);
-        CopySegment(output, SegmentOffsets[SegmentSeekTables], SeekTables);
-        CopySegment(output, SegmentOffsets[SegmentEntryNames], EntryNames);
+        CopySegment(output, offsets[SegmentBankData], BankData);
+        CopySegment(output, offsets[SegmentSeekTables], SeekTables);
+        CopySegment(output, offsets[SegmentEntryNames], EntryNames);
 
-        uint metaOffset = SegmentOffsets[SegmentEntryMetaData];
+        uint metaOffset = offsets[SegmentEntryMetaData];
         for (int i = 0; i < Entries.Count; i++)
         {
             var entry = Entries[i];
@@ -239,6 +324,49 @@ public sealed class WaveBank
     }
 
     public void WriteFile(string path) => File.WriteAllBytes(path, Write());
+
+    private (uint Offset, int Length)[] HeaderSegments(uint[] offsets) =>
+    [
+        (offsets[SegmentBankData], BankData.Length),
+        (offsets[SegmentEntryMetaData], Entries.Count * WaveBankEntry.RecordSize),
+        (offsets[SegmentSeekTables], SeekTables.Length),
+        (offsets[SegmentEntryNames], EntryNames.Length),
+    ];
+
+    /// <summary>
+    /// Whether the non-empty segments sit after the header, apart from each other and before
+    /// the wave data.
+    /// </summary>
+    private bool FitsLayout(uint[] offsets)
+    {
+        var used = HeaderSegments(offsets).Where(s => s.Length > 0).OrderBy(s => s.Offset).ToList();
+        long end = HeaderSize;
+        foreach (var (offset, length) in used)
+        {
+            if (offset < end) return false;
+            end = offset + (long)length;
+        }
+        return end <= offsets[SegmentEntryWaveData];
+    }
+
+    /// <summary>
+    /// Bank data, entry metadata, seek tables and entry names one after another from the
+    /// header, as retail banks lay them out, with the wave data at the next boundary.
+    /// </summary>
+    private uint[] PackedLayout(uint alignment)
+    {
+        var offsets = new uint[SegmentCount];
+        var segments = HeaderSegments(offsets);
+        uint at = HeaderSize;
+        for (int i = 0; i < segments.Length; i++)
+        {
+            if (segments[i].Length == 0) continue;
+            offsets[i] = at;
+            at += (uint)Align.Up(segments[i].Length, 4);
+        }
+        offsets[SegmentEntryWaveData] = Align.Up(at, alignment);
+        return offsets;
+    }
 
     /// <summary>
     /// An empty segment is skipped, so its recorded offset may lie past the end of the output.
