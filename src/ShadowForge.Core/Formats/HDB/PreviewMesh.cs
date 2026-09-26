@@ -82,12 +82,13 @@ public sealed class PreviewMesh
         for (int i = 0; i < textures.Length; i++)
         {
             string name = MaterialNames[i];
+            bool plain = TextureAddressing.RepeatsPlainly(name);
             try
             {
                 if (files.TryGetValue(name + ".dds", out string? dds))
-                    textures[i] = PreviewTexture.Decode(File.ReadAllBytes(dds), isVolume: false, maxSize);
+                    textures[i] = PreviewTexture.Decode(File.ReadAllBytes(dds), isVolume: false, maxSize, plain);
                 else if (files.TryGetValue(name + ".36t", out string? volume))
-                    textures[i] = PreviewTexture.Decode(File.ReadAllBytes(volume), isVolume: true, maxSize);
+                    textures[i] = PreviewTexture.Decode(File.ReadAllBytes(volume), isVolume: true, maxSize, plain);
             }
             catch (Exception ex) when (ex is IOException or InvalidDataException or NotSupportedException
                                            or ArgumentException or IndexOutOfRangeException)
@@ -101,7 +102,9 @@ public sealed class PreviewMesh
 
 /// <summary>
 /// Collects placed models into one <see cref="PreviewMesh"/>. Draws use their stage-0 texture
-/// on UV set 0. Stage 1 and 2 layers are not previewed.
+/// on UV set 0. An eye draw also carries its stage-1 texture, the iris, on the eye UV set,
+/// which the renderer lays over the stage-0 texture by the iris's alpha. The stage-2 eyelid is
+/// the runtime blink and stays out of the rest-pose preview.
 /// </summary>
 public sealed class PreviewMeshBuilder
 {
@@ -117,18 +120,7 @@ public sealed class PreviewMeshBuilder
     {
         int slotCount = Math.Max(model.TextureCount, 1);
         var slots = new int[slotCount];
-        for (int i = 0; i < slotCount; i++)
-        {
-            string name = textureNames is not null && i < textureNames.Count ? textureNames[i]
-                : i < model.Textures.Count ? model.Textures[i].Name : $"material_{i}";
-            if (!_materialByName.TryGetValue(name, out int global))
-            {
-                global = _materialNames.Count;
-                _materialNames.Add(name);
-                _materialByName[name] = global;
-            }
-            slots[i] = global;
-        }
+        for (int i = 0; i < slotCount; i++) slots[i] = Slot(model, i, textureNames);
 
         var boneGlobals = BindPose.ComputeGlobals(model.Bones);
         foreach (var va in VertexArrayDraws.Collect(model))
@@ -149,14 +141,39 @@ public sealed class PreviewMeshBuilder
                 }
 
                 int material = slots[Math.Clamp(group.MaterialIndex, 0, slotCount - 1)];
+                int iris = group.Stage1TexIndex >= 0 ? Slot(model, group.Stage1TexIndex, textureNames) : -1;
                 foreach (var (a, b, c) in DrawTriangles.Enumerate(ia.Indices, group.Topology, positions.Length))
                     _triangles.Add(new PreviewRenderer.Triangle(
                         positions[a], positions[b], positions[c],
                         normals[a], normals[b], normals[c],
-                        uvs[a], uvs[b], uvs[c], material));
+                        uvs[a], uvs[b], uvs[c], material)
+                    {
+                        Overlay = iris,
+                        OA = iris < 0 ? default : EyeUV(va.Vertices[a]),
+                        OB = iris < 0 ? default : EyeUV(va.Vertices[b]),
+                        OC = iris < 0 ? default : EyeUV(va.Vertices[c]),
+                    });
             }
         }
         return this;
+    }
+
+    private static Vector2 EyeUV(Vertex v) => new(v.UEye, 1f - v.VEye);
+
+    /// <summary>
+    /// The mesh-wide slot of a model's texture, added on first use.
+    /// </summary>
+    private int Slot(ModelFile model, int texture, IReadOnlyList<string>? textureNames)
+    {
+        string name = textureNames is not null && texture < textureNames.Count ? textureNames[texture]
+            : texture < model.Textures.Count ? model.Textures[texture].Name : $"material_{texture}";
+        if (!_materialByName.TryGetValue(name, out int global))
+        {
+            global = _materialNames.Count;
+            _materialNames.Add(name);
+            _materialByName[name] = global;
+        }
+        return global;
     }
 
     public PreviewMesh Build() => new(_triangles.ToList(), _materialNames.ToList());

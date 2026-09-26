@@ -98,22 +98,29 @@ public static class PreviewRenderer
                 NB = Vector3.TransformNormal(t.NB, view),
                 NC = Vector3.TransformNormal(t.NC, view),
             };
-            var texture = mesh.Textures is { } textures && t.Material >= 0 && t.Material < textures.Count
-                ? textures[t.Material]
-                : null;
-            RasterizeShaded(viewed, shading, texture, ref target);
+            RasterizeShaded(viewed, shading, TextureOf(mesh, t.Material), TextureOf(mesh, t.Overlay), ref target);
         }
     }
 
+    private static PreviewTexture? TextureOf(PreviewMesh mesh, int slot) =>
+        mesh.Textures is { } textures && slot >= 0 && slot < textures.Count ? textures[slot] : null;
+
     /// <summary>
     /// A triangle's corners, with per-corner normals and UVs and its material slot. A zero
-    /// normal falls back to the face normal. Material -1 means no slot.
+    /// normal falls back to the face normal. Material -1 means no slot. Overlay is an eye
+    /// draw's iris slot, drawn over the material by its alpha on the OA/OB/OC UVs, or -1.
     /// </summary>
     internal readonly record struct Triangle(
         Vector3 A, Vector3 B, Vector3 C,
         Vector3 NA = default, Vector3 NB = default, Vector3 NC = default,
         Vector2 UA = default, Vector2 UB = default, Vector2 UC = default,
-        int Material = -1);
+        int Material = -1)
+    {
+        public int Overlay { get; init; } = -1;
+        public Vector2 OA { get; init; }
+        public Vector2 OB { get; init; }
+        public Vector2 OC { get; init; }
+    }
 
     private static List<Triangle> CollectTriangles(ModelFile model) =>
         Prepare(model).Triangles.ToList();
@@ -135,13 +142,14 @@ public static class PreviewRenderer
     private const float WireWidth = 0.75f;
 
     private static void RasterizeShaded(in Triangle tri, PreviewShading shading, PreviewTexture? texture,
-        ref Target target)
+        PreviewTexture? overlay, ref Target target)
     {
         float ax = tri.A.X * target.Scale + target.OX, ay = -tri.A.Y * target.Scale + target.OY, az = tri.A.Z;
         float bx = tri.B.X * target.Scale + target.OX, by = -tri.B.Y * target.Scale + target.OY, bz = tri.B.Z;
         float cx = tri.C.X * target.Scale + target.OX, cy = -tri.C.Y * target.Scale + target.OY, cz = tri.C.Z;
         Vector3 nb = tri.NB, nc = tri.NC;
         Vector2 ub = tri.UB, uc = tri.UC;
+        Vector2 ob = tri.OB, oc = tri.OC;
 
         float area = (bx - ax) * (cy - ay) - (by - ay) * (cx - ax);
         if (MathF.Abs(area) < 1e-4f) return;
@@ -152,6 +160,7 @@ public static class PreviewRenderer
             (bz, cz) = (cz, bz);
             (nb, nc) = (nc, nb);
             (ub, uc) = (uc, ub);
+            (ob, oc) = (oc, ob);
             area = -area;
         }
 
@@ -221,6 +230,11 @@ public static class PreviewRenderer
                     {
                         var uv = w0 * tri.UA + w1 * ub + w2 * uc;
                         var texel = texture!.Sample(uv.X, uv.Y);
+                        if (overlay is not null)
+                        {
+                            var ouv = w0 * tri.OA + w1 * ob + w2 * oc;
+                            texel = Over(texel, overlay.Sample(ouv.X, ouv.Y));
+                        }
                         if (texel.A < 128) continue;
                         color = shading == PreviewShading.TexturedUnlit
                             ? texel with { A = 0xFF }
@@ -240,6 +254,20 @@ public static class PreviewRenderer
                 target.Pixels[idx] = color;
             }
         }
+    }
+
+    /// <summary>
+    /// The iris over the stage-0 texel, mixed by the iris's alpha. The result is as opaque as
+    /// the more opaque of the two, so an iris still shows where the face texture is cut out.
+    /// </summary>
+    private static Rgba32 Over(Rgba32 under, Rgba32 over)
+    {
+        float a = over.A / 255f;
+        return new Rgba32(
+            (byte)(under.R + (over.R - under.R) * a),
+            (byte)(under.G + (over.G - under.G) * a),
+            (byte)(under.B + (over.B - under.B) * a),
+            Math.Max(under.A, over.A));
     }
 
     private static Rgba32 ToColor(Vector3 rgb) => new(

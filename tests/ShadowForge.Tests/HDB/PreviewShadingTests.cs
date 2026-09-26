@@ -159,4 +159,25 @@ public sealed class PreviewShadingTests
 
         Assert.Equal(texels[expectedTexel], texture.Sample(u, 0.5f));
     }
+
+    [Theory]
+    [InlineData(0.25f, 0)]
+    [InlineData(1.25f, 0)]
+    [InlineData(1.75f, 1)]
+    [InlineData(-0.25f, 1)]
+    public void Sample_RepeatsPlainly_WhenAsked(float u, int expectedTexel)
+    {
+        Rgba32[] texels = [new(255, 0, 0, 255), new(0, 0, 255, 255)];
+        var texture = new PreviewTexture(2, 1, texels) { RepeatsPlainly = true };
+
+        Assert.Equal(texels[expectedTexel], texture.Sample(u, 0.5f));
+    }
+
+    [Theory]
+    [InlineData("mirrortex_em142_3", true)]
+    [InlineData("MirrorTex_em139_03", true)]
+    [InlineData("em142_1", false)]
+    [InlineData("pc01_mirrortex", false)]
+    public void Addressing_RepeatsPlainlyOnlyForMirrortex(string name, bool expected) =>
+        Assert.Equal(expected, TextureAddressing.RepeatsPlainly(name));
 }

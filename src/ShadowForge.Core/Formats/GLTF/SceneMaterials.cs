@@ -11,7 +11,8 @@ namespace ShadowForge.Formats.GLTF;
 /// <summary>
 /// glTF materials for a model's texture slots. A slot whose texture is not found gets a
 /// flat color from a fixed palette. Textures sample with MIRRORED_REPEAT, because Blue
-/// Dragon UVs span [-1, +1] on mirror-symmetric parts.
+/// Dragon UVs span [-1, +1] on mirror-symmetric parts, except where
+/// <see cref="TextureAddressing"/> calls for plain REPEAT.
 /// </summary>
 internal static class SceneMaterials
 {
@@ -50,7 +51,7 @@ internal static class SceneMaterials
                 if (TextureResolver.FindDDS(name, textureDir) is { } diffusePath)
                 {
                     mat.WithBaseColor(LoadDDS(diffusePath, name), null);
-                    ApplyMirroredRepeat(mat, KnownChannel.BaseColor);
+                    ApplyWrap(mat, KnownChannel.BaseColor, name);
                     hasTexture = true;
                 }
                 else if (TextureResolver.FindVolume(name, textureDir) is { } volumePath)
@@ -61,7 +62,7 @@ internal static class SceneMaterials
                 if (TextureResolver.FindNormalMap(name, textureDir) is { } normalPath)
                 {
                     mat.WithNormal(LoadDDS(normalPath, name + "_n"), 1.0f);
-                    ApplyMirroredRepeat(mat, KnownChannel.Normal);
+                    ApplyWrap(mat, KnownChannel.Normal, name);
                 }
             }
 
@@ -97,7 +98,7 @@ internal static class SceneMaterials
                 .UseTexture()
                 .WithPrimaryImage(LoadDDS(diffusePath, name))
                 .WithCoordinateSet(1);
-            ApplyMirroredRepeat(mat, KnownChannel.BaseColor);
+            ApplyWrap(mat, KnownChannel.BaseColor, name);
             hasTexture = true;
         }
 
@@ -159,7 +160,7 @@ internal static class SceneMaterials
             return false;
 
         mat.WithBaseColor(ImageBuilder.From(new MemoryImage(slices[0]), texName), null);
-        ApplyMirroredRepeat(mat, KnownChannel.BaseColor);
+        ApplyWrap(mat, KnownChannel.BaseColor, texName);
         mat.Extras = new JsonObject
         {
             ["sfVolumeTexture"] = texName + ".36t",
@@ -168,13 +169,16 @@ internal static class SceneMaterials
         return true;
     }
 
-    private static void ApplyMirroredRepeat(MaterialBuilder mat, KnownChannel channel)
+    private static void ApplyWrap(MaterialBuilder mat, KnownChannel channel, string texName)
     {
+        var wrap = TextureAddressing.RepeatsPlainly(texName)
+            ? TextureWrapMode.REPEAT
+            : TextureWrapMode.MIRRORED_REPEAT;
         mat.UseChannel(channel)
             .UseTexture()
             .WithSampler(
-                TextureWrapMode.MIRRORED_REPEAT,
-                TextureWrapMode.MIRRORED_REPEAT,
+                wrap,
+                wrap,
                 TextureMipMapFilter.DEFAULT,
                 TextureInterpolationFilter.DEFAULT);
     }

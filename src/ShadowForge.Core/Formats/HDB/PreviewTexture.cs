@@ -7,14 +7,19 @@ namespace ShadowForge.Formats.HDB;
 
 /// <summary>
 /// A decoded texture for the preview, scaled down so its longer side is at most the limit
-/// given to <see cref="Decode"/>. Sampling uses mirrored repeat, because Blue Dragon UVs
-/// span [-1, +1] on mirror-symmetric parts.
+/// given to <see cref="Decode"/>. Sampling uses mirrored repeat, or plain repeat when
+/// <see cref="RepeatsPlainly"/> is set. See <see cref="TextureAddressing"/>.
 /// </summary>
 public sealed class PreviewTexture
 {
     public int Width { get; }
     public int Height { get; }
     internal Rgba32[] Pixels { get; }
+
+    /// <summary>
+    /// Wraps UVs with plain repeat instead of mirrored repeat.
+    /// </summary>
+    public bool RepeatsPlainly { get; init; }
 
     internal PreviewTexture(int width, int height, Rgba32[] pixels)
     {
@@ -25,11 +30,17 @@ public sealed class PreviewTexture
 
     /// <summary>
     /// Decodes a .dds, or the first depth slice of a .36t volume when
-    /// <paramref name="isVolume"/> is set.
+    /// <paramref name="isVolume"/> is set. A volume comes back opaque: its alpha is the fur
+    /// strand mask the runtime cuts shells with, not a cut-out of the base surface, so the
+    /// preview's alpha test would reduce the surface to specks.
     /// </summary>
-    public static PreviewTexture Decode(byte[] raw, bool isVolume = false, int maxSize = 512)
+    public static PreviewTexture Decode(byte[] raw, bool isVolume = false, int maxSize = 512,
+        bool repeatsPlainly = false)
     {
         var (rgba, width, height) = Converter.DecodeRgba(raw, isVolume);
+        if (isVolume)
+            for (int i = 3; i < rgba.Length; i += 4)
+                rgba[i] = 0xFF;
         using var image = Image.LoadPixelData<Rgba32>(rgba, width, height);
         if (Math.Max(width, height) > maxSize)
         {
@@ -38,7 +49,7 @@ public sealed class PreviewTexture
         }
         var pixels = new Rgba32[image.Width * image.Height];
         image.CopyPixelDataTo(pixels);
-        return new PreviewTexture(image.Width, image.Height, pixels);
+        return new PreviewTexture(image.Width, image.Height, pixels) { RepeatsPlainly = repeatsPlainly };
     }
 
     /// <summary>
@@ -46,10 +57,12 @@ public sealed class PreviewTexture
     /// </summary>
     internal Rgba32 Sample(float u, float v)
     {
-        int x = (int)(Mirror(u) * Width);
-        int y = (int)(Mirror(v) * Height);
+        int x = (int)(Wrap(u) * Width);
+        int y = (int)(Wrap(v) * Height);
         return Pixels[Math.Min(y, Height - 1) * Width + Math.Min(x, Width - 1)];
     }
+
+    private float Wrap(float t) => RepeatsPlainly ? t - MathF.Floor(t) : Mirror(t);
 
     private static float Mirror(float t)
     {
