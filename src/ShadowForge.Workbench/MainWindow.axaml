@@ -313,6 +313,84 @@
         </Panel>
       </TabItem>
 
+      <TabItem Header="Audio">
+        <Grid ColumnDefinitions="*,12,560">
+          <DockPanel>
+            <DockPanel DockPanel.Dock="Top" Classes="listTools">
+              <TextBlock x:Name="BankCount" DockPanel.Dock="Right" Classes="listCount" />
+              <StackPanel Orientation="Horizontal" Spacing="8">
+                <TextBlock Text="Folder" Classes="toolLabel" />
+                <ComboBox x:Name="BankFolderBox" MinWidth="170" />
+              </StackPanel>
+            </DockPanel>
+            <ListBox x:Name="BankList">
+              <ListBox.ItemTemplate>
+                <DataTemplate x:DataType="local:BankRow">
+                  <Grid ColumnDefinitions="*,Auto">
+                    <StackPanel>
+                      <TextBlock Text="{Binding Name}" FontFamily="Consolas,monospace" />
+                      <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" />
+                    </StackPanel>
+                    <Border Grid.Column="1" Classes="tag"><TextBlock Text="{Binding Kind}" FontSize="11" /></Border>
+                  </Grid>
+                </DataTemplate>
+              </ListBox.ItemTemplate>
+            </ListBox>
+          </DockPanel>
+
+          <Border Grid.Column="2" Classes="panel">
+            <Panel>
+              <TextBlock x:Name="NoBankText" Text="Select a sound bank to hear, export or replace its waves."
+                         HorizontalAlignment="Center" VerticalAlignment="Center" Opacity="0.6"
+                         TextWrapping="Wrap" TextAlignment="Center" Margin="24" />
+              <DockPanel x:Name="BankDetailsPanel" IsVisible="False">
+                <StackPanel DockPanel.Dock="Top" Spacing="10">
+                  <StackPanel Spacing="2">
+                    <TextBlock x:Name="BankTitle" FontSize="20" FontWeight="SemiBold" FontFamily="Consolas,monospace" />
+                    <TextBlock x:Name="BankInfo" FontSize="12" Opacity="0.7" TextWrapping="Wrap" />
+                  </StackPanel>
+                  <Grid ColumnDefinitions="*,8,*">
+                    <Button x:Name="StopAudioButton" Content="Stop playback"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                    <Button x:Name="ExportBankButton" Grid.Column="2" Content="Export all as .wav"
+                            HorizontalAlignment="Stretch" HorizontalContentAlignment="Center" />
+                  </Grid>
+                  <StackPanel Orientation="Horizontal" Spacing="8">
+                    <TextBlock Text="Replace into mod" Classes="toolLabel" />
+                    <TextBox x:Name="AudioModName" MinWidth="160" />
+                    <CheckBox x:Name="AudioEnableOnBuild" Content="Enable after replacing" />
+                  </StackPanel>
+                  <TextBlock x:Name="WavesHeader" Text="Waves" FontWeight="SemiBold" Margin="0,4,0,0" />
+                </StackPanel>
+                <ScrollViewer>
+                  <ItemsControl x:Name="WaveList">
+                    <ItemsControl.ItemTemplate>
+                      <DataTemplate x:DataType="local:WaveRow">
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,6">
+                          <StackPanel VerticalAlignment="Center">
+                            <StackPanel Orientation="Horizontal" Spacing="6">
+                              <TextBlock Text="{Binding Title}" FontFamily="Consolas,monospace" FontSize="12" />
+                              <TextBlock Text="{Binding Status}" FontSize="11" Foreground="#E0A040" />
+                            </StackPanel>
+                            <TextBlock Text="{Binding Detail}" FontSize="11" Opacity="0.6" TextTrimming="CharacterEllipsis" />
+                          </StackPanel>
+                          <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6" VerticalAlignment="Center">
+                            <Button Classes="wavePlay" Content="Play" Padding="10,3" FontSize="12" />
+                            <Button Classes="waveExport" Content="Export" Padding="10,3" FontSize="12" />
+                            <Button Classes="waveReplace" Content="Replace…" Padding="10,3" FontSize="12"
+                                    ToolTip.Tip="Replace this wave with an audio file, in a copy of the bank in the mod above" />
+                          </StackPanel>
+                        </Grid>
+                      </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                  </ItemsControl>
+                </ScrollViewer>
+              </DockPanel>
+            </Panel>
+          </Border>
+        </Grid>
+      </TabItem>
+
       <TabItem Header="Settings">
         <ScrollViewer>
           <StackPanel MaxWidth="760" HorizontalAlignment="Left" Spacing="26" Margin="4,0,24,24">
@@ -351,6 +429,18 @@
                     <Button x:Name="SettingsDetectBlenderButton" Content="Detect" />
                   </StackPanel>
                   <TextBox x:Name="SettingsBlenderPath" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="FFmpeg" />
+                <TextBlock Classes="settingHelp"
+                           Text="Almost all of the game's audio is XMA, which the Audio tab decodes and converts through ffmpeg.exe. Without it, only the few PCM waves play, and replacements must be 16-bit PCM .wav files." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseFfmpegButton" Content="Browse…" />
+                    <Button x:Name="SettingsDetectFfmpegButton" Content="Detect" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsFfmpegPath" IsReadOnly="True" />
                 </DockPanel>
               </StackPanel>
             </StackPanel>
@@ -401,6 +491,17 @@
                     <Button x:Name="SettingsOpenTexturesButton" Content="Open" />
                   </StackPanel>
                   <TextBox x:Name="SettingsTextureRoot" IsReadOnly="True" />
+                </DockPanel>
+              </StackPanel>
+              <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Audio exports" />
+                <TextBlock Classes="settingHelp" Text="Export saves waves here as .wav, one folder per bank." />
+                <DockPanel>
+                  <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="8" Margin="8,0,0,0">
+                    <Button x:Name="SettingsBrowseAudioButton" Content="Browse…" />
+                    <Button x:Name="SettingsOpenAudioButton" Content="Open" />
+                  </StackPanel>
+                  <TextBox x:Name="SettingsAudioRoot" IsReadOnly="True" />
                 </DockPanel>
               </StackPanel>
               <CheckBox x:Name="SettingsExportTextures" Content="Include textures in map exports" />

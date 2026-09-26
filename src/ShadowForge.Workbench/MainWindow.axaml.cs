@@ -8,6 +8,7 @@ using ShadowForge.Formats.HDB;
 using ShadowForge.Formats.MAP;
 using ShadowForge.Formats.MDL;
 using ShadowForge.GameData;
+using ShadowForge.GameData.Audio;
 using ShadowForge.GameData.Entities;
 using ShadowForge.GameData.Maps;
 using ShadowForge.Minimap;
@@ -125,6 +126,7 @@ public partial class MainWindow : Window
         SetUpScripts();
         SetUpDeploy();
         SetUpTextures();
+        SetUpAudio();
         Opened += (_, _) => Load(_settings.GameRoot, remember: false, fallBackToDetect: true);
     }
 
@@ -172,6 +174,8 @@ public partial class MainWindow : Window
                         $"{m.RegionIPK} · " + (m.RegionAvailable ? $"{m.ModelCount} models" : "region pack missing"),
                         m.RegionAvailable, m.ModelCount))
                     .ToList();
+                var soundCatalog = new SoundBankCatalog(install);
+                var banks = soundCatalog.List().Select(b => new BankRow(b)).ToList();
                 var scripts = IndexScripts(install, maps.Select(m => m.Id));
                 var modCatalog = install.ModsRoot is null ? null : new ModCatalog(install);
                 var mods = modCatalog?.List() ?? [];
@@ -189,6 +193,7 @@ public partial class MainWindow : Window
                     _characters = characters;
                     _maps = maps;
                     _scriptsByStage = scripts;
+                    ShowSoundBanks(soundCatalog, banks);
                     _mods = mods;
                     ShowModCatalog(modCatalog);
                     SetFilterChoices(CharacterClassBox, AllClasses, characters.Select(c => c.Class), _settings.CharacterClass);
@@ -237,6 +242,7 @@ public partial class MainWindow : Window
         ShowRows(MapList, maps, ShowMapDetails);
         MapCount.Text = CountText(maps.Count, _maps.Count);
 
+        FilterBanks(Match);
         FilterMods(null);
     }
 

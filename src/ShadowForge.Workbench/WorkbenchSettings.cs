@@ -58,6 +58,28 @@ public sealed class WorkbenchSettings
     /// The mod name Deploy textures as mod last used, offered again next time.
     /// </summary>
     public string? LastTextureMod { get; set; }
+
+    /// <summary>
+    /// The ffmpeg.exe that decodes XMA waves and converts replacement audio, or null to detect it.
+    /// </summary>
+    public string? FfmpegPath { get; set; }
+
+    /// <summary>
+    /// Where exported waves are saved as .wav, one folder per bank.
+    /// </summary>
+    public string AudioExportRoot { get; set; } = Path.Combine(
+        Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "audio");
+
+    /// <summary>
+    /// The mod that Replace writes wave banks into, and whether it enables that mod.
+    /// </summary>
+    public string AudioModName { get; set; } = "audio_edits";
+
+    /// <summary>
+    /// The Audio tab's folder filter. A null folder shows every folder.
+    /// </summary>
+    public string? AudioFolder { get; set; }
+    public bool AudioEnableOnBuild { get; set; } = true;
     public bool ScriptEnableOnBuild { get; set; } = true;
 
     /// <summary>

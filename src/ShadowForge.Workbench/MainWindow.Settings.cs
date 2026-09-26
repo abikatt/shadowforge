@@ -111,6 +111,41 @@ public partial class MainWindow
             }
         };
         SettingsOpenTexturesButton.Click += (_, _) => OpenFolder(_settings.TextureWorkRoot);
+        SettingsBrowseAudioButton.Click += async (_, _) =>
+        {
+            if (await PickFolder("Choose where exported audio goes") is { } path)
+            {
+                _settings.AudioExportRoot = path;
+                SaveSettings();
+            }
+        };
+        SettingsOpenAudioButton.Click += (_, _) => OpenFolder(_settings.AudioExportRoot);
+        SettingsBrowseFfmpegButton.Click += async (_, _) =>
+        {
+            var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Locate ffmpeg.exe",
+                FileTypeFilter = [new FilePickerFileType("FFmpeg") { Patterns = ["ffmpeg.exe"] }],
+            });
+            if (picked is [var file, ..] && file.TryGetLocalPath() is { } path)
+            {
+                _settings.FfmpegPath = path;
+                SaveSettings();
+            }
+        };
+        SettingsDetectFfmpegButton.Click += (_, _) =>
+        {
+            if (AudioTools.FindFfmpeg(null) is { } found)
+            {
+                _settings.FfmpegPath = found;
+                SaveSettings();
+                SetStatus("FFmpeg: " + found);
+            }
+            else
+            {
+                SetStatus("No ffmpeg.exe found on PATH or in C:\\ffmpeg\\bin. Use Browse… to pick it.");
+            }
+        };
 
         SettingsExportTextures.IsCheckedChanged += (_, _) =>
         {
@@ -142,6 +177,9 @@ public partial class MainWindow
         SettingsMapExportRoot.Text = _settings.MapExportRoot;
         SettingsScriptRoot.Text = _settings.ScriptWorkRoot;
         SettingsTextureRoot.Text = _settings.TextureWorkRoot;
+        SettingsAudioRoot.Text = _settings.AudioExportRoot;
+        SettingsFfmpegPath.Text = _settings.FfmpegPath
+            ?? (AudioTools.FindFfmpeg(null) is { } found ? $"Detected: {found}" : "Not found. Pick ffmpeg.exe to hear and replace XMA audio.");
         SettingsExportTextures.IsChecked = _settings.ExportTextures;
         SettingsTextureQualityBox.SelectedItem =
             TextureQualities.FirstOrDefault(q => q.MaxSize == _settings.PreviewTextureSize) ?? TextureQualities[1];
