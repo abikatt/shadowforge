@@ -1,0 +1,64 @@
+# Hand-written sample covering the BDSL surface syntax. '#' notes are stripped on compile.
+scene "Sample Town" {
+    version = "0.26"
+    filename = "sc01_9999_01.rpj"
+    flags = 1
+    area = town
+    stage_id = 601
+    messages = "msg\\town\\sample"
+    area_origin = (0.0, 1.5E-05, -12.25)
+}
+
+link "chest" id=54 {
+    position = (-170.85934, 195.67198, -941.4268)
+    @target_refs 0x1 0x0 0x3F800000
+
+    when var[3362] == 0 {
+        @block_type npc
+        @render visible, collision
+        @type_data 0x10001
+        // kept verbatim, # and all
+        quest_patch(quest=585)
+        if !overflow(item 34, +1) {
+            give_item(item=34, add=1, qty=1, popup=1)
+            var[3362] = 1
+            end
+        }
+        @3:
+        fade_transition(msg=20, param1=34, param2=1)
+    }
+}
+
+zone "gate" id=7 {
+    position = (10.0, 0.0, 20.0)
+
+    when chapter 1679..9999 and party_all(kluke, zola) and savebit(12) {
+        @block_type auto_run
+        @behavior alternate
+        init {
+            character_visible(visible=1)
+        }
+        if in_party(jiro) {
+            show_message(msg=12, auto_advance=1)
+        }
+        if chapter >= 1700 then goto @5 else end
+        var[10] = random(1, 6)
+        var[11] += var[10]
+        var[12] = chara(shu, 3)
+        var[13] = gold
+        flag[40] = 1
+        var[14] = flag[41]
+        !screen_fade(type=1, alt_enable=1)   # disabled: the VM skips it
+        battle(entry=3, flags=0x2) on_win goto @5 on_lose end
+        @5:
+        set_ailment(chara=all, ailment=2, active=1)
+        goto @5
+        param_data 0102AABB
+    }
+}
+
+waypoint 3 type=resource at (1.0, 2.0, 3.0) rotation=1.5 {
+    condition variable 0x2 == 0x5
+    ref = "obj_crate"
+    targets = [1, 4, 0]
+}

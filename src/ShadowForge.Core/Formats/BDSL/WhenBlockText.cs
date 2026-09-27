@@ -82,7 +82,7 @@ internal static class WhenBlockText
             if (depth == 0 && line == "}") { i++; break; }
             if (depth == 0 && line.StartsWith('@') && !line.EndsWith(':'))
             {
-                ApplyDirective(block, line);
+                AtLine(i + 1, () => ApplyDirective(block, line));
                 body.Add("");
                 continue;
             }

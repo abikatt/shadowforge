@@ -21,14 +21,18 @@ internal static class EntryText
     public static int Read(SceneFile scene, string[] lines, int i)
     {
         var tokens = TextHelper.TokenizeLine(Clean(lines[i]));
-        var entry = new SceneEntry { Type = TextHelper.ParseEntryType(tokens[0]) };
-        if (tokens.Count >= 2)
-            entry.Name = TextHelper.UnquoteString(tokens[1]);
-        foreach (var token in tokens.Skip(2))
+        var entry = new SceneEntry();
+        AtLine(i + 1, () =>
         {
-            if (token.StartsWith("id="))
-                entry.Id = TextHelper.ParseUInt(token[3..]);
-        }
+            entry.Type = TextHelper.ParseEntryType(tokens[0]);
+            if (tokens.Count >= 2)
+                entry.Name = TextHelper.UnquoteString(tokens[1]);
+            foreach (var token in tokens.Skip(2))
+            {
+                if (token.StartsWith("id="))
+                    entry.Id = TextHelper.ParseUInt(token[3..]);
+            }
+        });
 
         i++;
         while (i < lines.Length)
@@ -43,9 +47,9 @@ internal static class EntryText
             }
 
             if (line.StartsWith("@"))
-                ApplyDirective(entry, line);
+                AtLine(i + 1, () => ApplyDirective(entry, line));
             else if (TrySplitField(line, out string key, out string value))
-                ApplyField(entry, key, value);
+                AtLine(i + 1, () => ApplyField(entry, key, value));
             i++;
         }
 

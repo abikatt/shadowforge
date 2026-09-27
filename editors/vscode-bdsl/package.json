@@ -1,0 +1,98 @@
+{
+  "name": "bdsl",
+  "displayName": "BDSL",
+  "description": "Language support for ShadowForge BDSL scene scripts: highlighting, compile checks, outline, hover and completion.",
+  "version": "0.1.0",
+  "publisher": "shadowforge",
+  "private": true,
+  "license": "UNLICENSED",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages",
+    "Snippets"
+  ],
+  "scripts": {
+    "generate": "node scripts/generate-opcodes.mjs",
+    "install-local": "node scripts/install.mjs",
+    "uninstall-local": "node scripts/install.mjs --uninstall"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "bdsl",
+        "aliases": [
+          "BDSL",
+          "bdsl"
+        ],
+        "extensions": [
+          ".bdsl"
+        ],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "bdsl",
+        "scopeName": "source.bdsl",
+        "path": "./syntaxes/bdsl.tmLanguage.json"
+      }
+    ],
+    "snippets": [
+      {
+        "language": "bdsl",
+        "path": "./snippets/bdsl.json"
+      },
+      {
+        "language": "bdsl",
+        "path": "./snippets/opcodes.json"
+      }
+    ],
+    "configurationDefaults": {
+      "[bdsl]": {
+        "editor.tabSize": 4,
+        "editor.insertSpaces": true
+      }
+    },
+    "commands": [
+      {
+        "command": "bdsl.compile",
+        "title": "Compile to RPJ",
+        "category": "BDSL"
+      }
+    ],
+    "menus": {
+      "commandPalette": [
+        {
+          "command": "bdsl.compile",
+          "when": "editorLangId == bdsl"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "BDSL",
+      "properties": {
+        "bdsl.sforgePath": {
+          "type": "string",
+          "default": "",
+          "markdownDescription": "Path to `sforge.exe`. Empty uses the newest build under `src/ShadowForge.CLI/bin` in this repository, then `sforge` on PATH."
+        },
+        "bdsl.check.enabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check BDSL files with `sforge rpj check` and show the first error."
+        },
+        "bdsl.check.onType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Check while typing, not only on open and save."
+        }
+      }
+    }
+  },
+  "main": "./extension.js",
+  "activationEvents": [
+    "onLanguage:bdsl"
+  ]
+}

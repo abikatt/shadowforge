@@ -6,7 +6,10 @@ namespace ShadowForge.Scene.Script.Lift;
 public static class CommentText
 {
     public const int Words = 14;
-    private const int Units = Words * 2;
+    /// <summary>
+    /// Longest comment text, in UTF-16 units.
+    /// </summary>
+    public const int MaxLength = Words * 2;
 
     /// <summary>
     /// False when the words are not a NUL-terminated string followed by NUL padding,
@@ -16,17 +19,17 @@ public static class CommentText
     {
         text = "";
         if (words.Length != Words) return false;
-        var units = new char[Units];
+        var units = new char[MaxLength];
         for (int i = 0; i < Words; i++)
         {
             units[2 * i] = (char)(words[i] & 0xFFFF);
             units[2 * i + 1] = (char)(words[i] >> 16);
         }
         int end = Array.IndexOf(units, '\0');
-        if (end < 0) end = Units;
+        if (end < 0) end = MaxLength;
         for (int i = 0; i < end; i++)
             if (units[i] < ' ') return false;
-        for (int i = end; i < Units; i++)
+        for (int i = end; i < MaxLength; i++)
             if (units[i] != '\0') return false;
         text = new string(units, 0, end);
         return true;
@@ -37,8 +40,8 @@ public static class CommentText
     /// </summary>
     public static uint[] Encode(string text)
     {
-        if (text.Length > Units)
-            throw new FormatException($"comment longer than {Units} UTF-16 units: '{text}'");
+        if (text.Length > MaxLength)
+            throw new FormatException($"comment longer than {MaxLength} UTF-16 units: '{text}'");
         if (text.Contains('\0'))
             throw new FormatException("comment contains a NUL character");
         var words = new uint[Words];

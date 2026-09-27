@@ -27,13 +27,14 @@ internal static class WaypointText
     public static int Read(SceneFile scene, string[] lines, int i)
     {
         var wp = new Waypoint();
-        ReadHeader(wp, Clean(lines[i]));
+        string header = Clean(lines[i]);
+        AtLine(i + 1, () => ReadHeader(wp, header));
 
         for (i++; i < lines.Length; i++)
         {
             string line = Clean(lines[i]);
             if (IsBlockEnd(line)) { i++; break; }
-            ApplyBodyLine(wp, line);
+            AtLine(i + 1, () => ApplyBodyLine(wp, line));
         }
 
         scene.Waypoints.Add(wp);

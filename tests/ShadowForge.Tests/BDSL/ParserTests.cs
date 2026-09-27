@@ -307,4 +307,34 @@ public sealed class ParserTests
         Assert.Contains("BDSL line 2", ex.Message);
         Assert.Contains("more than 8 block conditions", ex.Message);
     }
+
+    [Fact]
+    public void Parse_LongComment_ReportsLine()
+    {
+        var bdsl = """
+            spawn "E" id=1 {
+                when all {
+                    // this comment is far too long to fit
+                    end
+                }
+            }
+            """;
+
+        var ex = Assert.Throws<FormatException>(() => TextScene.Read(bdsl));
+        Assert.Contains("BDSL line 3", ex.Message);
+    }
+
+    [Theory]
+    [InlineData("scene \"S\" {\n    stage_id = banana\n}", 2)]
+    [InlineData("spawn \"E\" id=x {\n}", 1)]
+    [InlineData("spawn \"E\" id=1 {\n    position = (1, 2, 3)\n    facing = north\n}", 3)]
+    [InlineData("spawn \"E\" id=1 {\n    @runtime_ref zz\n}", 2)]
+    [InlineData("spawn \"E\" id=1 {\n    when all {\n        @type_data nope\n    }\n}", 3)]
+    [InlineData("waypoint q at (0, 0, 0) {\n}", 1)]
+    [InlineData("waypoint 1 at (0, 0, 0) {\n    priority = high\n}", 2)]
+    public void Parse_BadFieldValue_ReportsLine(string bdsl, int line)
+    {
+        var ex = Assert.Throws<FormatException>(() => TextScene.Read(bdsl));
+        Assert.StartsWith($"BDSL line {line}:", ex.Message);
+    }
 }

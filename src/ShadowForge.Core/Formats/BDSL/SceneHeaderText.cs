@@ -24,7 +24,7 @@ internal static class SceneHeaderText
             string line = Clean(lines[i]);
             if (IsBlockEnd(line)) return i + 1;
             if (TrySplitField(line, out string key, out string value))
-                ApplyField(scene, key, value);
+                AtLine(i + 1, () => ApplyField(scene, key, value));
         }
         return i;
     }

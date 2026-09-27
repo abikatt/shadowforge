@@ -1,0 +1,1522 @@
+[
+  {
+    "name": "label",
+    "opcode": 5000,
+    "sugared": true,
+    "args": [
+      {
+        "name": "id",
+        "kind": "label"
+      }
+    ]
+  },
+  {
+    "name": "show_message",
+    "opcode": 5001,
+    "sugared": false,
+    "args": [
+      {
+        "name": "msg",
+        "kind": "int"
+      },
+      {
+        "name": "p1",
+        "kind": "int"
+      },
+      {
+        "name": "auto_advance",
+        "kind": "int"
+      },
+      {
+        "name": "delay",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "set_variable",
+    "opcode": 5003,
+    "sugared": true,
+    "args": [
+      {
+        "name": "dest",
+        "kind": "var"
+      },
+      {
+        "name": "op",
+        "kind": "int"
+      },
+      {
+        "name": "value_type",
+        "kind": "int"
+      },
+      {
+        "name": "value",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "give_item",
+    "opcode": 5004,
+    "sugared": false,
+    "args": [
+      {
+        "name": "item",
+        "kind": "int"
+      },
+      {
+        "name": "add",
+        "kind": "int"
+      },
+      {
+        "name": "qty",
+        "kind": "int"
+      },
+      {
+        "name": "popup",
+        "kind": "int"
+      },
+      {
+        "name": "p4",
+        "kind": "int"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "give_gold",
+    "opcode": 5005,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "hex"
+      },
+      {
+        "name": "amount",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "set_ailment",
+    "opcode": 5006,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "ailment",
+        "kind": "int"
+      },
+      {
+        "name": "active",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "heal",
+    "opcode": 5008,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "target",
+        "kind": "int"
+      },
+      {
+        "name": "mode",
+        "kind": "hex"
+      },
+      {
+        "name": "amount",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "formation",
+    "opcode": 5010,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "action",
+        "kind": "int"
+      },
+      {
+        "name": "level_ref",
+        "kind": "int"
+      },
+      {
+        "name": "level",
+        "kind": "int"
+      },
+      {
+        "name": "class_slot",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "if_extended",
+    "opcode": 5012,
+    "sugared": true,
+    "args": [
+      {
+        "name": "check_type",
+        "kind": "int"
+      },
+      {
+        "name": "sub_type",
+        "kind": "int"
+      },
+      {
+        "name": "operand",
+        "kind": "int"
+      },
+      {
+        "name": "compare_value",
+        "kind": "int"
+      },
+      {
+        "name": "compare_op",
+        "kind": "int"
+      },
+      {
+        "name": "true_action",
+        "kind": "int"
+      },
+      {
+        "name": "true_label",
+        "kind": "label"
+      },
+      {
+        "name": "false_action",
+        "kind": "int"
+      },
+      {
+        "name": "false_label",
+        "kind": "label"
+      }
+    ]
+  },
+  {
+    "name": "goto_label",
+    "opcode": 5013,
+    "sugared": true,
+    "args": [
+      {
+        "name": "id",
+        "kind": "label"
+      }
+    ]
+  },
+  {
+    "name": "shop_open",
+    "opcode": 5014,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "hex"
+      },
+      {
+        "name": "shop",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "battle",
+    "opcode": 5016,
+    "sugared": true,
+    "args": [
+      {
+        "name": "entry",
+        "kind": "int"
+      },
+      {
+        "name": "p1",
+        "kind": "int"
+      },
+      {
+        "name": "p2",
+        "kind": "int"
+      },
+      {
+        "name": "p3",
+        "kind": "int"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "play_bgm",
+    "opcode": 5017,
+    "sugared": false,
+    "args": [
+      {
+        "name": "stop",
+        "kind": "int"
+      },
+      {
+        "name": "bgm",
+        "kind": "int"
+      },
+      {
+        "name": "mode",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "play_se",
+    "opcode": 5018,
+    "sugared": false,
+    "args": [
+      {
+        "name": "flags",
+        "kind": "hex"
+      },
+      {
+        "name": "loops",
+        "kind": "int"
+      },
+      {
+        "name": "p2",
+        "kind": "int"
+      },
+      {
+        "name": "x",
+        "kind": "float"
+      },
+      {
+        "name": "y",
+        "kind": "float"
+      },
+      {
+        "name": "z",
+        "kind": "float"
+      },
+      {
+        "name": "p6",
+        "kind": "int"
+      },
+      {
+        "name": "name0",
+        "kind": "hex"
+      },
+      {
+        "name": "name1",
+        "kind": "hex"
+      },
+      {
+        "name": "name2",
+        "kind": "hex"
+      },
+      {
+        "name": "name3",
+        "kind": "hex"
+      },
+      {
+        "name": "name4",
+        "kind": "hex"
+      },
+      {
+        "name": "name5",
+        "kind": "hex"
+      },
+      {
+        "name": "name6",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "wait",
+    "opcode": 5020,
+    "sugared": false,
+    "args": [
+      {
+        "name": "type",
+        "kind": "int"
+      },
+      {
+        "name": "frames",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "map_change",
+    "opcode": 5021,
+    "sugared": false,
+    "args": [
+      {
+        "name": "area_type",
+        "kind": "int"
+      },
+      {
+        "name": "stage",
+        "kind": "int"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      },
+      {
+        "name": "x",
+        "kind": "float"
+      },
+      {
+        "name": "z",
+        "kind": "float"
+      },
+      {
+        "name": "y",
+        "kind": "float"
+      },
+      {
+        "name": "angle",
+        "kind": "float"
+      },
+      {
+        "name": "entry_point",
+        "kind": "int"
+      },
+      {
+        "name": "transition",
+        "kind": "int"
+      },
+      {
+        "name": "npc_ref",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "game_over",
+    "opcode": 5022,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "end_script",
+    "opcode": 5023,
+    "sugared": true,
+    "args": []
+  },
+  {
+    "name": "set_chapter_flag",
+    "opcode": 5024,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chapter",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "transition2",
+    "opcode": 5025,
+    "sugared": false,
+    "args": [
+      {
+        "name": "has_dest",
+        "kind": "int"
+      },
+      {
+        "name": "dest",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "screen_fade",
+    "opcode": 5026,
+    "sugared": false,
+    "args": [
+      {
+        "name": "type",
+        "kind": "int"
+      },
+      {
+        "name": "frames",
+        "kind": "int"
+      },
+      {
+        "name": "color",
+        "kind": "hex"
+      },
+      {
+        "name": "p3",
+        "kind": "int"
+      },
+      {
+        "name": "p4",
+        "kind": "int"
+      },
+      {
+        "name": "p5",
+        "kind": "int"
+      },
+      {
+        "name": "p6",
+        "kind": "hex"
+      },
+      {
+        "name": "alt_enable",
+        "kind": "int"
+      },
+      {
+        "name": "alt_target",
+        "kind": "int"
+      },
+      {
+        "name": "alt_flag",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "npc_action",
+    "opcode": 5027,
+    "sugared": false,
+    "args": [
+      {
+        "name": "target_type",
+        "kind": "int"
+      },
+      {
+        "name": "action",
+        "kind": "int"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      },
+      {
+        "name": "npc",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "move_character",
+    "opcode": 5028,
+    "sugared": false,
+    "args": [
+      {
+        "name": "target_type",
+        "kind": "int"
+      },
+      {
+        "name": "move_type",
+        "kind": "int"
+      },
+      {
+        "name": "x",
+        "kind": "float"
+      },
+      {
+        "name": "y",
+        "kind": "float"
+      },
+      {
+        "name": "z",
+        "kind": "float"
+      },
+      {
+        "name": "rotation",
+        "kind": "float"
+      },
+      {
+        "name": "param",
+        "kind": "int"
+      },
+      {
+        "name": "npc",
+        "kind": "int"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      },
+      {
+        "name": "callback_var",
+        "kind": "var"
+      }
+    ]
+  },
+  {
+    "name": "player_teleport",
+    "opcode": 5029,
+    "sugared": false,
+    "args": [
+      {
+        "name": "x",
+        "kind": "float"
+      },
+      {
+        "name": "y",
+        "kind": "float"
+      },
+      {
+        "name": "z",
+        "kind": "float"
+      },
+      {
+        "name": "rotation",
+        "kind": "float"
+      },
+      {
+        "name": "p4",
+        "kind": "int"
+      },
+      {
+        "name": "warp",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "battle_damage",
+    "opcode": 5030,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "mode",
+        "kind": "int"
+      },
+      {
+        "name": "damage",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "fade_transition",
+    "opcode": 5031,
+    "sugared": false,
+    "args": [
+      {
+        "name": "msg",
+        "kind": "int"
+      },
+      {
+        "name": "param1",
+        "kind": "int"
+      },
+      {
+        "name": "param2",
+        "kind": "int"
+      },
+      {
+        "name": "param3",
+        "kind": "int"
+      },
+      {
+        "name": "play_transition",
+        "kind": "int"
+      },
+      {
+        "name": "area_flags",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "event_scene",
+    "opcode": 5032,
+    "sugared": false,
+    "args": [
+      {
+        "name": "major",
+        "kind": "int"
+      },
+      {
+        "name": "p1",
+        "kind": "int"
+      },
+      {
+        "name": "minor",
+        "kind": "int"
+      },
+      {
+        "name": "p3",
+        "kind": "int"
+      },
+      {
+        "name": "behavior",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "character_walk",
+    "opcode": 5033,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "give_medal",
+    "opcode": 5034,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "hex"
+      },
+      {
+        "name": "amount",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "character_setup",
+    "opcode": 5035,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "direction",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "dismiss_party",
+    "opcode": 5036,
+    "sugared": false,
+    "args": [
+      {
+        "name": "npc",
+        "kind": "int"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "character_equip",
+    "opcode": 5037,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "change_leader",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "character_position",
+    "opcode": 5039,
+    "sugared": false,
+    "args": [
+      {
+        "name": "p0",
+        "kind": "int"
+      },
+      {
+        "name": "npc",
+        "kind": "int"
+      },
+      {
+        "name": "use_warp",
+        "kind": "int"
+      },
+      {
+        "name": "warp",
+        "kind": "int"
+      },
+      {
+        "name": "x",
+        "kind": "float"
+      },
+      {
+        "name": "y",
+        "kind": "float"
+      },
+      {
+        "name": "z",
+        "kind": "float"
+      },
+      {
+        "name": "rotation",
+        "kind": "float"
+      }
+    ]
+  },
+  {
+    "name": "set_field_state",
+    "opcode": 5040,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "int"
+      },
+      {
+        "name": "field_type",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "character_visible",
+    "opcode": 5041,
+    "sugared": false,
+    "args": [
+      {
+        "name": "visible",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "if_overflow",
+    "opcode": 5042,
+    "sugared": true,
+    "args": [
+      {
+        "name": "check_type",
+        "kind": "int"
+      },
+      {
+        "name": "item",
+        "kind": "int"
+      },
+      {
+        "name": "amount",
+        "kind": "int"
+      },
+      {
+        "name": "label",
+        "kind": "label"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "visual_effect",
+    "opcode": 5043,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "int"
+      },
+      {
+        "name": "npc",
+        "kind": "int"
+      },
+      {
+        "name": "action",
+        "kind": "int"
+      },
+      {
+        "name": "sub_action",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "special_op",
+    "opcode": 5044,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "close_dialogue",
+    "opcode": 5045,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "checkpoint",
+    "opcode": 5046,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "warp_activate",
+    "opcode": 5047,
+    "sugared": false,
+    "args": [
+      {
+        "name": "warp_point",
+        "kind": "int"
+      },
+      {
+        "name": "mode",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "render_state",
+    "opcode": 5048,
+    "sugared": false,
+    "args": [
+      {
+        "name": "layer",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "camera_point",
+    "opcode": 5049,
+    "sugared": false,
+    "args": [
+      {
+        "name": "set_position",
+        "kind": "int"
+      },
+      {
+        "name": "camera_point",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "comment",
+    "opcode": 5050,
+    "sugared": true,
+    "args": []
+  },
+  {
+    "name": "minigame_start",
+    "opcode": 5051,
+    "sugared": false,
+    "args": [
+      {
+        "name": "minigame",
+        "kind": "int"
+      },
+      {
+        "name": "config1",
+        "kind": "int"
+      },
+      {
+        "name": "config2",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "camera_target",
+    "opcode": 5052,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "scene_script",
+    "opcode": 5053,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "goto_title",
+    "opcode": 5054,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "shadow_toggle",
+    "opcode": 5055,
+    "sugared": false,
+    "args": [
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "shadow",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "party_shadow_class",
+    "opcode": 5056,
+    "sugared": false,
+    "args": [
+      {
+        "name": "shadow_class",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "init_begin",
+    "opcode": 5057,
+    "sugared": true,
+    "args": []
+  },
+  {
+    "name": "init_end",
+    "opcode": 5058,
+    "sugared": true,
+    "args": []
+  },
+  {
+    "name": "character_effect",
+    "opcode": 5059,
+    "sugared": false,
+    "args": [
+      {
+        "name": "target_type",
+        "kind": "int"
+      },
+      {
+        "name": "npc",
+        "kind": "int"
+      },
+      {
+        "name": "effect",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "effect",
+    "opcode": 5060,
+    "sugared": false,
+    "args": [
+      {
+        "name": "target_type",
+        "kind": "int"
+      },
+      {
+        "name": "npc",
+        "kind": "int"
+      },
+      {
+        "name": "p2",
+        "kind": "int"
+      },
+      {
+        "name": "hash",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "animation_trigger",
+    "opcode": 5061,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "camera_control",
+    "opcode": 5062,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "int"
+      },
+      {
+        "name": "p1",
+        "kind": "int"
+      },
+      {
+        "name": "frames",
+        "kind": "int"
+      },
+      {
+        "name": "eye_x",
+        "kind": "float"
+      },
+      {
+        "name": "eye_y",
+        "kind": "float"
+      },
+      {
+        "name": "eye_z",
+        "kind": "float"
+      },
+      {
+        "name": "target_x",
+        "kind": "float"
+      },
+      {
+        "name": "target_y",
+        "kind": "float"
+      },
+      {
+        "name": "target_z",
+        "kind": "float"
+      },
+      {
+        "name": "yaw",
+        "kind": "float"
+      }
+    ]
+  },
+  {
+    "name": "flag_get_set",
+    "opcode": 5063,
+    "sugared": true,
+    "args": [
+      {
+        "name": "flag",
+        "kind": "int"
+      },
+      {
+        "name": "direction",
+        "kind": "int"
+      },
+      {
+        "name": "value_or_dest",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "start_qte",
+    "opcode": 5064,
+    "sugared": false,
+    "args": [
+      {
+        "name": "qte",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "check_animation",
+    "opcode": 5065,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "shop_inn",
+    "opcode": 5066,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "show_message_b",
+    "opcode": 5067,
+    "sugared": false,
+    "args": [
+      {
+        "name": "msg",
+        "kind": "int"
+      },
+      {
+        "name": "p1",
+        "kind": "int"
+      },
+      {
+        "name": "auto_advance",
+        "kind": "int"
+      },
+      {
+        "name": "delay",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "transition2_b",
+    "opcode": 5068,
+    "sugared": false,
+    "args": [
+      {
+        "name": "has_dest",
+        "kind": "int"
+      },
+      {
+        "name": "dest",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "fade_transition_b",
+    "opcode": 5070,
+    "sugared": false,
+    "args": [
+      {
+        "name": "msg",
+        "kind": "int"
+      },
+      {
+        "name": "param1",
+        "kind": "int"
+      },
+      {
+        "name": "param2",
+        "kind": "int"
+      },
+      {
+        "name": "param3",
+        "kind": "int"
+      },
+      {
+        "name": "play_transition",
+        "kind": "int"
+      },
+      {
+        "name": "area_flags",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "set_field_script",
+    "opcode": 5071,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "set_abilities",
+    "opcode": 5072,
+    "sugared": false,
+    "args": [
+      {
+        "name": "target_mode",
+        "kind": "int"
+      },
+      {
+        "name": "chara",
+        "kind": "party"
+      },
+      {
+        "name": "mask",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "lookup_map",
+    "opcode": 5073,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "equip_skill",
+    "opcode": 5074,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "open_save_menu",
+    "opcode": 5075,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "character_shadow",
+    "opcode": 5076,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "character_speed",
+    "opcode": 5077,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "npc_walk_speed",
+    "opcode": 5078,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "face_target",
+    "opcode": 5079,
+    "sugared": false,
+    "args": [
+      {
+        "name": "specific",
+        "kind": "int"
+      },
+      {
+        "name": "chara",
+        "kind": "int"
+      },
+      {
+        "name": "target_type",
+        "kind": "int"
+      },
+      {
+        "name": "target",
+        "kind": "int"
+      },
+      {
+        "name": "x",
+        "kind": "float"
+      },
+      {
+        "name": "y",
+        "kind": "float"
+      },
+      {
+        "name": "z",
+        "kind": "float"
+      }
+    ]
+  },
+  {
+    "name": "effect_spawn",
+    "opcode": 5080,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "camera_shake",
+    "opcode": 5081,
+    "sugared": false,
+    "args": [
+      {
+        "name": "active",
+        "kind": "int"
+      },
+      {
+        "name": "frames",
+        "kind": "int"
+      },
+      {
+        "name": "direction",
+        "kind": "float"
+      },
+      {
+        "name": "magnitude",
+        "kind": "float"
+      }
+    ]
+  },
+  {
+    "name": "party_gather",
+    "opcode": 5083,
+    "sugared": false,
+    "args": [
+      {
+        "name": "angle",
+        "kind": "float"
+      },
+      {
+        "name": "flags",
+        "kind": "hex"
+      }
+    ]
+  },
+  {
+    "name": "quest_patch",
+    "opcode": 5084,
+    "sugared": false,
+    "args": [
+      {
+        "name": "quest",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "set_battle_result",
+    "opcode": 5085,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "give_item_special",
+    "opcode": 5086,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "movie_play",
+    "opcode": 5087,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "save_position",
+    "opcode": 5088,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "load_event_pack",
+    "opcode": 5089,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "npc_walk_state",
+    "opcode": 5090,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "shadow_state",
+    "opcode": 5091,
+    "sugared": false,
+    "args": [
+      {
+        "name": "mode",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "get_variable",
+    "opcode": 5093,
+    "sugared": false,
+    "args": [
+      {
+        "name": "dest",
+        "kind": "var"
+      }
+    ]
+  },
+  {
+    "name": "select_menu",
+    "opcode": 5094,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "treasure_chest",
+    "opcode": 5095,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "if_chest",
+    "opcode": 5096,
+    "sugared": false,
+    "args": [
+      {
+        "name": "check_type",
+        "kind": "int"
+      },
+      {
+        "name": "sub_type",
+        "kind": "int"
+      },
+      {
+        "name": "operand",
+        "kind": "int"
+      },
+      {
+        "name": "compare_value",
+        "kind": "int"
+      },
+      {
+        "name": "compare_op",
+        "kind": "int"
+      },
+      {
+        "name": "true_action",
+        "kind": "int"
+      },
+      {
+        "name": "true_label",
+        "kind": "label"
+      },
+      {
+        "name": "false_action",
+        "kind": "int"
+      },
+      {
+        "name": "false_label",
+        "kind": "label"
+      }
+    ]
+  },
+  {
+    "name": "set_variable_chest",
+    "opcode": 5097,
+    "sugared": false,
+    "args": [
+      {
+        "name": "dest",
+        "kind": "var"
+      },
+      {
+        "name": "op",
+        "kind": "int"
+      },
+      {
+        "name": "value_type",
+        "kind": "int"
+      },
+      {
+        "name": "value",
+        "kind": "int"
+      }
+    ]
+  },
+  {
+    "name": "special_query",
+    "opcode": 5098,
+    "sugared": false,
+    "args": []
+  },
+  {
+    "name": "open_book",
+    "opcode": 5100,
+    "sugared": false,
+    "args": [
+      {
+        "name": "p0",
+        "kind": "int"
+      },
+      {
+        "name": "book",
+        "kind": "int"
+      }
+    ]
+  }
+]

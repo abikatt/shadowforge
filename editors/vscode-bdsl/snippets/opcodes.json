@@ -1,0 +1,397 @@
+{
+  "show_message": {
+    "prefix": "show_message",
+    "description": "Opcode 5001 - msg: int, p1: int, auto_advance: int, delay: int. Zero-valued arguments may be omitted.",
+    "body": "show_message(msg=${1:0}, p1=${2:0}, auto_advance=${3:0}, delay=${4:0})"
+  },
+  "give_item": {
+    "prefix": "give_item",
+    "description": "Opcode 5004 - item: int, add: int, qty: int, popup: int, p4: int, flags: hex. Zero-valued arguments may be omitted.",
+    "body": "give_item(item=${1:0}, add=${2:0}, qty=${3:0}, popup=${4:0}, p4=${5:0}, flags=${6:0x0})"
+  },
+  "give_gold": {
+    "prefix": "give_gold",
+    "description": "Opcode 5005 - mode: hex, amount: int. Zero-valued arguments may be omitted.",
+    "body": "give_gold(mode=${1:0x0}, amount=${2:0})"
+  },
+  "set_ailment": {
+    "prefix": "set_ailment",
+    "description": "Opcode 5006 - chara: party, ailment: int, active: int. Zero-valued arguments may be omitted.",
+    "body": "set_ailment(chara=${1|shu,jiro,kluke,marumaro,zola,all|}, ailment=${2:0}, active=${3:0})"
+  },
+  "heal": {
+    "prefix": "heal",
+    "description": "Opcode 5008 - chara: party, target: int, mode: hex, amount: int. Zero-valued arguments may be omitted.",
+    "body": "heal(chara=${1|shu,jiro,kluke,marumaro,zola,all|}, target=${2:0}, mode=${3:0x0}, amount=${4:0})"
+  },
+  "formation": {
+    "prefix": "formation",
+    "description": "Opcode 5010 - chara: party, action: int, level_ref: int, level: int, class_slot: int. Zero-valued arguments may be omitted.",
+    "body": "formation(chara=${1|shu,jiro,kluke,marumaro,zola,all|}, action=${2:0}, level_ref=${3:0}, level=${4:0}, class_slot=${5:0})"
+  },
+  "shop_open": {
+    "prefix": "shop_open",
+    "description": "Opcode 5014 - mode: hex, shop: int. Zero-valued arguments may be omitted.",
+    "body": "shop_open(mode=${1:0x0}, shop=${2:0})"
+  },
+  "play_bgm": {
+    "prefix": "play_bgm",
+    "description": "Opcode 5017 - stop: int, bgm: int, mode: hex. Zero-valued arguments may be omitted.",
+    "body": "play_bgm(stop=${1:0}, bgm=${2:0}, mode=${3:0x0})"
+  },
+  "play_se": {
+    "prefix": "play_se",
+    "description": "Opcode 5018 - flags: hex, loops: int, p2: int, x: float, y: float, z: float, p6: int, name0: hex, name1: hex, name2: hex, name3: hex, name4: hex, name5: hex, name6: hex. Zero-valued arguments may be omitted.",
+    "body": "play_se(flags=${1:0x0}, loops=${2:0}, p2=${3:0}, x=${4:0.0}, y=${5:0.0}, z=${6:0.0}, p6=${7:0}, name0=${8:0x0}, name1=${9:0x0}, name2=${10:0x0}, name3=${11:0x0}, name4=${12:0x0}, name5=${13:0x0}, name6=${14:0x0})"
+  },
+  "wait": {
+    "prefix": "wait",
+    "description": "Opcode 5020 - type: int, frames: int. Zero-valued arguments may be omitted.",
+    "body": "wait(type=${1:0}, frames=${2:0})"
+  },
+  "map_change": {
+    "prefix": "map_change",
+    "description": "Opcode 5021 - area_type: int, stage: int, flags: hex, x: float, z: float, y: float, angle: float, entry_point: int, transition: int, npc_ref: int. Zero-valued arguments may be omitted.",
+    "body": "map_change(area_type=${1:0}, stage=${2:0}, flags=${3:0x0}, x=${4:0.0}, z=${5:0.0}, y=${6:0.0}, angle=${7:0.0}, entry_point=${8:0}, transition=${9:0}, npc_ref=${10:0})"
+  },
+  "game_over": {
+    "prefix": "game_over",
+    "description": "Opcode 5022. Zero-valued arguments may be omitted.",
+    "body": "game_over()"
+  },
+  "set_chapter_flag": {
+    "prefix": "set_chapter_flag",
+    "description": "Opcode 5024 - chapter: int. Zero-valued arguments may be omitted.",
+    "body": "set_chapter_flag(chapter=${1:0})"
+  },
+  "transition2": {
+    "prefix": "transition2",
+    "description": "Opcode 5025 - has_dest: int, dest: int. Zero-valued arguments may be omitted.",
+    "body": "transition2(has_dest=${1:0}, dest=${2:0})"
+  },
+  "screen_fade": {
+    "prefix": "screen_fade",
+    "description": "Opcode 5026 - type: int, frames: int, color: hex, p3: int, p4: int, p5: int, p6: hex, alt_enable: int, alt_target: int, alt_flag: int. Zero-valued arguments may be omitted.",
+    "body": "screen_fade(type=${1:0}, frames=${2:0}, color=${3:0x0}, p3=${4:0}, p4=${5:0}, p5=${6:0}, p6=${7:0x0}, alt_enable=${8:0}, alt_target=${9:0}, alt_flag=${10:0})"
+  },
+  "npc_action": {
+    "prefix": "npc_action",
+    "description": "Opcode 5027 - target_type: int, action: int, flags: hex, npc: int. Zero-valued arguments may be omitted.",
+    "body": "npc_action(target_type=${1:0}, action=${2:0}, flags=${3:0x0}, npc=${4:0})"
+  },
+  "move_character": {
+    "prefix": "move_character",
+    "description": "Opcode 5028 - target_type: int, move_type: int, x: float, y: float, z: float, rotation: float, param: int, npc: int, flags: hex, callback_var: var. Zero-valued arguments may be omitted.",
+    "body": "move_character(target_type=${1:0}, move_type=${2:0}, x=${3:0.0}, y=${4:0.0}, z=${5:0.0}, rotation=${6:0.0}, param=${7:0}, npc=${8:0}, flags=${9:0x0}, callback_var=var[${10:0}])"
+  },
+  "player_teleport": {
+    "prefix": "player_teleport",
+    "description": "Opcode 5029 - x: float, y: float, z: float, rotation: float, p4: int, warp: int. Zero-valued arguments may be omitted.",
+    "body": "player_teleport(x=${1:0.0}, y=${2:0.0}, z=${3:0.0}, rotation=${4:0.0}, p4=${5:0}, warp=${6:0})"
+  },
+  "battle_damage": {
+    "prefix": "battle_damage",
+    "description": "Opcode 5030 - chara: party, mode: int, damage: int. Zero-valued arguments may be omitted.",
+    "body": "battle_damage(chara=${1|shu,jiro,kluke,marumaro,zola,all|}, mode=${2:0}, damage=${3:0})"
+  },
+  "fade_transition": {
+    "prefix": "fade_transition",
+    "description": "Opcode 5031 - msg: int, param1: int, param2: int, param3: int, play_transition: int, area_flags: int. Zero-valued arguments may be omitted.",
+    "body": "fade_transition(msg=${1:0}, param1=${2:0}, param2=${3:0}, param3=${4:0}, play_transition=${5:0}, area_flags=${6:0})"
+  },
+  "event_scene": {
+    "prefix": "event_scene",
+    "description": "Opcode 5032 - major: int, p1: int, minor: int, p3: int, behavior: int. Zero-valued arguments may be omitted.",
+    "body": "event_scene(major=${1:0}, p1=${2:0}, minor=${3:0}, p3=${4:0}, behavior=${5:0})"
+  },
+  "character_walk": {
+    "prefix": "character_walk",
+    "description": "Opcode 5033. Zero-valued arguments may be omitted.",
+    "body": "character_walk()"
+  },
+  "give_medal": {
+    "prefix": "give_medal",
+    "description": "Opcode 5034 - mode: hex, amount: int. Zero-valued arguments may be omitted.",
+    "body": "give_medal(mode=${1:0x0}, amount=${2:0})"
+  },
+  "character_setup": {
+    "prefix": "character_setup",
+    "description": "Opcode 5035 - chara: party, direction: int. Zero-valued arguments may be omitted.",
+    "body": "character_setup(chara=${1|shu,jiro,kluke,marumaro,zola,all|}, direction=${2:0})"
+  },
+  "dismiss_party": {
+    "prefix": "dismiss_party",
+    "description": "Opcode 5036 - npc: int, flags: hex. Zero-valued arguments may be omitted.",
+    "body": "dismiss_party(npc=${1:0}, flags=${2:0x0})"
+  },
+  "character_equip": {
+    "prefix": "character_equip",
+    "description": "Opcode 5037 - chara: party, change_leader: int. Zero-valued arguments may be omitted.",
+    "body": "character_equip(chara=${1|shu,jiro,kluke,marumaro,zola,all|}, change_leader=${2:0})"
+  },
+  "character_position": {
+    "prefix": "character_position",
+    "description": "Opcode 5039 - p0: int, npc: int, use_warp: int, warp: int, x: float, y: float, z: float, rotation: float. Zero-valued arguments may be omitted.",
+    "body": "character_position(p0=${1:0}, npc=${2:0}, use_warp=${3:0}, warp=${4:0}, x=${5:0.0}, y=${6:0.0}, z=${7:0.0}, rotation=${8:0.0})"
+  },
+  "set_field_state": {
+    "prefix": "set_field_state",
+    "description": "Opcode 5040 - mode: int, field_type: int. Zero-valued arguments may be omitted.",
+    "body": "set_field_state(mode=${1:0}, field_type=${2:0})"
+  },
+  "character_visible": {
+    "prefix": "character_visible",
+    "description": "Opcode 5041 - visible: int. Zero-valued arguments may be omitted.",
+    "body": "character_visible(visible=${1:0})"
+  },
+  "visual_effect": {
+    "prefix": "visual_effect",
+    "description": "Opcode 5043 - mode: int, npc: int, action: int, sub_action: int. Zero-valued arguments may be omitted.",
+    "body": "visual_effect(mode=${1:0}, npc=${2:0}, action=${3:0}, sub_action=${4:0})"
+  },
+  "special_op": {
+    "prefix": "special_op",
+    "description": "Opcode 5044 - mode: int. Zero-valued arguments may be omitted.",
+    "body": "special_op(mode=${1:0})"
+  },
+  "close_dialogue": {
+    "prefix": "close_dialogue",
+    "description": "Opcode 5045. Zero-valued arguments may be omitted.",
+    "body": "close_dialogue()"
+  },
+  "checkpoint": {
+    "prefix": "checkpoint",
+    "description": "Opcode 5046. Zero-valued arguments may be omitted.",
+    "body": "checkpoint()"
+  },
+  "warp_activate": {
+    "prefix": "warp_activate",
+    "description": "Opcode 5047 - warp_point: int, mode: hex. Zero-valued arguments may be omitted.",
+    "body": "warp_activate(warp_point=${1:0}, mode=${2:0x0})"
+  },
+  "render_state": {
+    "prefix": "render_state",
+    "description": "Opcode 5048 - layer: int. Zero-valued arguments may be omitted.",
+    "body": "render_state(layer=${1:0})"
+  },
+  "camera_point": {
+    "prefix": "camera_point",
+    "description": "Opcode 5049 - set_position: int, camera_point: int. Zero-valued arguments may be omitted.",
+    "body": "camera_point(set_position=${1:0}, camera_point=${2:0})"
+  },
+  "minigame_start": {
+    "prefix": "minigame_start",
+    "description": "Opcode 5051 - minigame: int, config1: int, config2: int. Zero-valued arguments may be omitted.",
+    "body": "minigame_start(minigame=${1:0}, config1=${2:0}, config2=${3:0})"
+  },
+  "camera_target": {
+    "prefix": "camera_target",
+    "description": "Opcode 5052. Zero-valued arguments may be omitted.",
+    "body": "camera_target()"
+  },
+  "scene_script": {
+    "prefix": "scene_script",
+    "description": "Opcode 5053. Zero-valued arguments may be omitted.",
+    "body": "scene_script()"
+  },
+  "goto_title": {
+    "prefix": "goto_title",
+    "description": "Opcode 5054. Zero-valued arguments may be omitted.",
+    "body": "goto_title()"
+  },
+  "shadow_toggle": {
+    "prefix": "shadow_toggle",
+    "description": "Opcode 5055 - chara: party, shadow: int. Zero-valued arguments may be omitted.",
+    "body": "shadow_toggle(chara=${1|shu,jiro,kluke,marumaro,zola,all|}, shadow=${2:0})"
+  },
+  "party_shadow_class": {
+    "prefix": "party_shadow_class",
+    "description": "Opcode 5056 - shadow_class: int. Zero-valued arguments may be omitted.",
+    "body": "party_shadow_class(shadow_class=${1:0})"
+  },
+  "character_effect": {
+    "prefix": "character_effect",
+    "description": "Opcode 5059 - target_type: int, npc: int, effect: int. Zero-valued arguments may be omitted.",
+    "body": "character_effect(target_type=${1:0}, npc=${2:0}, effect=${3:0})"
+  },
+  "effect": {
+    "prefix": "effect",
+    "description": "Opcode 5060 - target_type: int, npc: int, p2: int, hash: hex. Zero-valued arguments may be omitted.",
+    "body": "effect(target_type=${1:0}, npc=${2:0}, p2=${3:0}, hash=${4:0x0})"
+  },
+  "animation_trigger": {
+    "prefix": "animation_trigger",
+    "description": "Opcode 5061. Zero-valued arguments may be omitted.",
+    "body": "animation_trigger()"
+  },
+  "camera_control": {
+    "prefix": "camera_control",
+    "description": "Opcode 5062 - mode: int, p1: int, frames: int, eye_x: float, eye_y: float, eye_z: float, target_x: float, target_y: float, target_z: float, yaw: float. Zero-valued arguments may be omitted.",
+    "body": "camera_control(mode=${1:0}, p1=${2:0}, frames=${3:0}, eye_x=${4:0.0}, eye_y=${5:0.0}, eye_z=${6:0.0}, target_x=${7:0.0}, target_y=${8:0.0}, target_z=${9:0.0}, yaw=${10:0.0})"
+  },
+  "start_qte": {
+    "prefix": "start_qte",
+    "description": "Opcode 5064 - qte: int. Zero-valued arguments may be omitted.",
+    "body": "start_qte(qte=${1:0})"
+  },
+  "check_animation": {
+    "prefix": "check_animation",
+    "description": "Opcode 5065. Zero-valued arguments may be omitted.",
+    "body": "check_animation()"
+  },
+  "shop_inn": {
+    "prefix": "shop_inn",
+    "description": "Opcode 5066. Zero-valued arguments may be omitted.",
+    "body": "shop_inn()"
+  },
+  "show_message_b": {
+    "prefix": "show_message_b",
+    "description": "Opcode 5067 - msg: int, p1: int, auto_advance: int, delay: int. Zero-valued arguments may be omitted.",
+    "body": "show_message_b(msg=${1:0}, p1=${2:0}, auto_advance=${3:0}, delay=${4:0})"
+  },
+  "transition2_b": {
+    "prefix": "transition2_b",
+    "description": "Opcode 5068 - has_dest: int, dest: int. Zero-valued arguments may be omitted.",
+    "body": "transition2_b(has_dest=${1:0}, dest=${2:0})"
+  },
+  "fade_transition_b": {
+    "prefix": "fade_transition_b",
+    "description": "Opcode 5070 - msg: int, param1: int, param2: int, param3: int, play_transition: int, area_flags: int. Zero-valued arguments may be omitted.",
+    "body": "fade_transition_b(msg=${1:0}, param1=${2:0}, param2=${3:0}, param3=${4:0}, play_transition=${5:0}, area_flags=${6:0})"
+  },
+  "set_field_script": {
+    "prefix": "set_field_script",
+    "description": "Opcode 5071. Zero-valued arguments may be omitted.",
+    "body": "set_field_script()"
+  },
+  "set_abilities": {
+    "prefix": "set_abilities",
+    "description": "Opcode 5072 - target_mode: int, chara: party, mask: hex. Zero-valued arguments may be omitted.",
+    "body": "set_abilities(target_mode=${1:0}, chara=${2|shu,jiro,kluke,marumaro,zola,all|}, mask=${3:0x0})"
+  },
+  "lookup_map": {
+    "prefix": "lookup_map",
+    "description": "Opcode 5073. Zero-valued arguments may be omitted.",
+    "body": "lookup_map()"
+  },
+  "equip_skill": {
+    "prefix": "equip_skill",
+    "description": "Opcode 5074. Zero-valued arguments may be omitted.",
+    "body": "equip_skill()"
+  },
+  "open_save_menu": {
+    "prefix": "open_save_menu",
+    "description": "Opcode 5075. Zero-valued arguments may be omitted.",
+    "body": "open_save_menu()"
+  },
+  "character_shadow": {
+    "prefix": "character_shadow",
+    "description": "Opcode 5076. Zero-valued arguments may be omitted.",
+    "body": "character_shadow()"
+  },
+  "character_speed": {
+    "prefix": "character_speed",
+    "description": "Opcode 5077. Zero-valued arguments may be omitted.",
+    "body": "character_speed()"
+  },
+  "npc_walk_speed": {
+    "prefix": "npc_walk_speed",
+    "description": "Opcode 5078. Zero-valued arguments may be omitted.",
+    "body": "npc_walk_speed()"
+  },
+  "face_target": {
+    "prefix": "face_target",
+    "description": "Opcode 5079 - specific: int, chara: int, target_type: int, target: int, x: float, y: float, z: float. Zero-valued arguments may be omitted.",
+    "body": "face_target(specific=${1:0}, chara=${2:0}, target_type=${3:0}, target=${4:0}, x=${5:0.0}, y=${6:0.0}, z=${7:0.0})"
+  },
+  "effect_spawn": {
+    "prefix": "effect_spawn",
+    "description": "Opcode 5080. Zero-valued arguments may be omitted.",
+    "body": "effect_spawn()"
+  },
+  "camera_shake": {
+    "prefix": "camera_shake",
+    "description": "Opcode 5081 - active: int, frames: int, direction: float, magnitude: float. Zero-valued arguments may be omitted.",
+    "body": "camera_shake(active=${1:0}, frames=${2:0}, direction=${3:0.0}, magnitude=${4:0.0})"
+  },
+  "party_gather": {
+    "prefix": "party_gather",
+    "description": "Opcode 5083 - angle: float, flags: hex. Zero-valued arguments may be omitted.",
+    "body": "party_gather(angle=${1:0.0}, flags=${2:0x0})"
+  },
+  "quest_patch": {
+    "prefix": "quest_patch",
+    "description": "Opcode 5084 - quest: int. Zero-valued arguments may be omitted.",
+    "body": "quest_patch(quest=${1:0})"
+  },
+  "set_battle_result": {
+    "prefix": "set_battle_result",
+    "description": "Opcode 5085. Zero-valued arguments may be omitted.",
+    "body": "set_battle_result()"
+  },
+  "give_item_special": {
+    "prefix": "give_item_special",
+    "description": "Opcode 5086. Zero-valued arguments may be omitted.",
+    "body": "give_item_special()"
+  },
+  "movie_play": {
+    "prefix": "movie_play",
+    "description": "Opcode 5087. Zero-valued arguments may be omitted.",
+    "body": "movie_play()"
+  },
+  "save_position": {
+    "prefix": "save_position",
+    "description": "Opcode 5088 - mode: int. Zero-valued arguments may be omitted.",
+    "body": "save_position(mode=${1:0})"
+  },
+  "load_event_pack": {
+    "prefix": "load_event_pack",
+    "description": "Opcode 5089. Zero-valued arguments may be omitted.",
+    "body": "load_event_pack()"
+  },
+  "npc_walk_state": {
+    "prefix": "npc_walk_state",
+    "description": "Opcode 5090. Zero-valued arguments may be omitted.",
+    "body": "npc_walk_state()"
+  },
+  "shadow_state": {
+    "prefix": "shadow_state",
+    "description": "Opcode 5091 - mode: int. Zero-valued arguments may be omitted.",
+    "body": "shadow_state(mode=${1:0})"
+  },
+  "get_variable": {
+    "prefix": "get_variable",
+    "description": "Opcode 5093 - dest: var. Zero-valued arguments may be omitted.",
+    "body": "get_variable(dest=var[${1:0}])"
+  },
+  "select_menu": {
+    "prefix": "select_menu",
+    "description": "Opcode 5094. Zero-valued arguments may be omitted.",
+    "body": "select_menu()"
+  },
+  "treasure_chest": {
+    "prefix": "treasure_chest",
+    "description": "Opcode 5095. Zero-valued arguments may be omitted.",
+    "body": "treasure_chest()"
+  },
+  "if_chest": {
+    "prefix": "if_chest",
+    "description": "Opcode 5096 - check_type: int, sub_type: int, operand: int, compare_value: int, compare_op: int, true_action: int, true_label: label, false_action: int, false_label: label. Zero-valued arguments may be omitted.",
+    "body": "if_chest(check_type=${1:0}, sub_type=${2:0}, operand=${3:0}, compare_value=${4:0}, compare_op=${5:0}, true_action=${6:0}, true_label=@${7:0}, false_action=${8:0}, false_label=@${9:0})"
+  },
+  "set_variable_chest": {
+    "prefix": "set_variable_chest",
+    "description": "Opcode 5097 - dest: var, op: int, value_type: int, value: int. Zero-valued arguments may be omitted.",
+    "body": "set_variable_chest(dest=var[${1:0}], op=${2:0}, value_type=${3:0}, value=${4:0})"
+  },
+  "special_query": {
+    "prefix": "special_query",
+    "description": "Opcode 5098. Zero-valued arguments may be omitted.",
+    "body": "special_query()"
+  },
+  "open_book": {
+    "prefix": "open_book",
+    "description": "Opcode 5100 - p0: int, book: int. Zero-valued arguments may be omitted.",
+    "body": "open_book(p0=${1:0}, book=${2:0})"
+  }
+}

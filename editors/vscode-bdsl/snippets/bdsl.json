@@ -1,0 +1,129 @@
+{
+  "Scene header": {
+    "prefix": "scene",
+    "description": "Scene header block.",
+    "body": [
+      "scene \"${1:Name}\" {",
+      "    version = \"${2:0.26}\"",
+      "    filename = \"${3:sc01_0001_01.rpj}\"",
+      "    area = ${4|town,indoor,dungeon,world,cube|}",
+      "    stage_id = ${5:0}",
+      "}"
+    ]
+  },
+  "Entry": {
+    "prefix": "entry",
+    "description": "Scene entry with one when-block.",
+    "body": [
+      "${1|link,spawn,box,zone,enemy,entity,warp|} \"${2:name}\" id=${3:0} {",
+      "    position = (${4:0.0}, ${5:0.0}, ${6:0.0})",
+      "",
+      "    when ${7:var[0] == 0} {",
+      "        @block_type ${8|event,npc,auto_run,link,cube|}",
+      "        $0",
+      "    }",
+      "}"
+    ]
+  },
+  "When block": {
+    "prefix": "when",
+    "description": "Script block, run when every condition holds (up to 8 slots).",
+    "body": [
+      "when ${1:var[0] == 0} {",
+      "    @block_type ${2|event,npc,auto_run,link,cube|}",
+      "    $0",
+      "}"
+    ]
+  },
+  "When chapter range": {
+    "prefix": "whenchapter",
+    "description": "Script block limited to a chapter range.",
+    "body": [
+      "when chapter ${1:0}..${2:9999} {",
+      "    $0",
+      "}"
+    ]
+  },
+  "If block": {
+    "prefix": "if",
+    "description": "Structured if. Compiles to if_extended jumping past the block.",
+    "body": [
+      "if ${1:var[0] == 0} {",
+      "    $0",
+      "}"
+    ]
+  },
+  "If then goto": {
+    "prefix": "ifgoto",
+    "description": "Flat if with jump actions.",
+    "body": "if ${1:var[0] == 0} then ${2:goto @${3:0}}${4: else ${5:end}}"
+  },
+  "If item fits": {
+    "prefix": "ifoverflow",
+    "description": "Runs the block when adding the amount would not overflow.",
+    "body": [
+      "if !overflow(${1:item ${2:0}}, +${3:1}) {",
+      "    $0",
+      "}"
+    ]
+  },
+  "Give item with overflow check": {
+    "prefix": "giveitem",
+    "description": "Chest-style item grant guarded by an overflow check and a variable.",
+    "body": [
+      "if !overflow(item ${1:0}, +${2:1}) {",
+      "    give_item(item=$1, add=1, qty=$2, popup=1)",
+      "    var[${3:0}] = 1",
+      "    end",
+      "}"
+    ]
+  },
+  "Init block": {
+    "prefix": "init",
+    "description": "Init section (init_begin .. init_end).",
+    "body": [
+      "init {",
+      "    $0",
+      "}"
+    ]
+  },
+  "Battle": {
+    "prefix": "battle",
+    "description": "Battle with win and lose actions.",
+    "body": "battle(entry=${1:0}) on_win ${2:end} on_lose ${3:goto @${4:0}}"
+  },
+  "Label": {
+    "prefix": "label",
+    "description": "Jump target.",
+    "body": "@${1:0}:"
+  },
+  "Goto": {
+    "prefix": "goto",
+    "description": "Jump to a label.",
+    "body": "goto @${1:0}"
+  },
+  "Set variable": {
+    "prefix": "var",
+    "description": "Variable assignment. Value may be a number, var[N], random(a, b), chara(member, prop) or a game value.",
+    "body": "var[${1:0}] ${2|=,+=,-=,*=,/=|} ${3:0}"
+  },
+  "Set flag": {
+    "prefix": "flag",
+    "description": "Flag write.",
+    "body": "flag[${1:0}] = ${2:1}"
+  },
+  "Read flag": {
+    "prefix": "readflag",
+    "description": "Copy a flag into a variable.",
+    "body": "var[${1:0}] = flag[${2:0}]"
+  },
+  "Waypoint": {
+    "prefix": "waypoint",
+    "description": "Waypoint block.",
+    "body": [
+      "waypoint ${1:0} at (${2:0.0}, ${3:0.0}, ${4:0.0}) {",
+      "    targets = [${5:0}, ${6:0}, ${7:0}]",
+      "}"
+    ]
+  }
+}

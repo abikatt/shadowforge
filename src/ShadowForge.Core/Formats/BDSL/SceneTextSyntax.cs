@@ -19,6 +19,18 @@ internal static class SceneTextSyntax
         new($"BDSL line {lineNumber}: {message}");
 
     /// <summary>
+    /// Runs one line's parse step, rethrowing a bad value as a <see cref="LineError"/>.
+    /// </summary>
+    public static void AtLine(int lineNumber, Action parse)
+    {
+        try { parse(); }
+        catch (Exception ex) when (ex is FormatException or OverflowException or ArgumentException or IndexOutOfRangeException)
+        {
+            throw LineError(lineNumber, ex.Message);
+        }
+    }
+
+    /// <summary>
     /// Splits "key = value" at the first '='. False when the line has no '='.
     /// </summary>
     public static bool TrySplitField(string line, out string key, out string value)

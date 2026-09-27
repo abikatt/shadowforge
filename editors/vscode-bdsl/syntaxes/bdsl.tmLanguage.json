@@ -1,0 +1,262 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "BDSL",
+  "scopeName": "source.bdsl",
+  "fileTypes": ["bdsl"],
+  "patterns": [
+    { "include": "#compiled-comment" },
+    { "include": "#disabled-statement" },
+    { "include": "#note-comment" },
+    { "include": "#hex-blob" },
+    { "include": "#directive" },
+    { "include": "#label-definition" },
+    { "include": "#block-header" },
+    { "include": "#field" },
+    { "include": "#expression" }
+  ],
+  "repository": {
+    "compiled-comment": {
+      "comment": "A '//' line is compiled into a comment opcode (5050), so it is kept verbatim, '#' included.",
+      "match": "^\\s*(//)(.*)$",
+      "captures": {
+        "0": { "name": "comment.line.double-slash.bdsl" },
+        "1": { "name": "punctuation.definition.comment.bdsl" }
+      }
+    },
+    "note-comment": {
+      "comment": "'#' starts a note the compiler strips.",
+      "match": "(#).*$",
+      "captures": {
+        "0": { "name": "comment.line.number-sign.bdsl" },
+        "1": { "name": "punctuation.definition.comment.bdsl" }
+      }
+    },
+    "disabled-statement": {
+      "comment": "A leading '!' marks an instruction the VM skips; dim the whole line.",
+      "begin": "^\\s*(!)",
+      "beginCaptures": {
+        "1": { "name": "keyword.operator.disabled.bdsl" }
+      },
+      "end": "(?=#)|$",
+      "contentName": "comment.block.disabled.bdsl"
+    },
+    "hex-blob": {
+      "match": "^\\s*(param_data|raw)\\b\\s*([0-9A-Fa-f]*)",
+      "captures": {
+        "1": { "name": "entity.other.attribute-name.data.bdsl" },
+        "2": { "name": "constant.numeric.hex.blob.bdsl" }
+      }
+    },
+    "directive": {
+      "comment": "@name value header lines. '@N:' labels are handled separately.",
+      "begin": "^\\s*(@[A-Za-z_][A-Za-z0-9_]*)(?=\\s|$)",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.directive.bdsl" }
+      },
+      "end": "(?=#)|$",
+      "patterns": [
+        { "include": "#directive-value" },
+        { "include": "#number" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "directive-value": {
+      "match": "\\b(event|npc|auto_run|link|cube|default|alternate|disabled|normal|boss|visible|type_b|variant_b|variant_a|special_anim|collision|has_model)\\b",
+      "name": "constant.language.enum.bdsl"
+    },
+    "label-definition": {
+      "match": "^\\s*(@\\d+)(:)",
+      "captures": {
+        "1": { "name": "entity.name.label.bdsl markup.bold.label.bdsl" },
+        "2": { "name": "punctuation.separator.label.bdsl" }
+      }
+    },
+    "block-header": {
+      "patterns": [
+        {
+          "match": "^\\s*(scene)\\b",
+          "captures": { "1": { "name": "entity.name.type.scene.bdsl" } }
+        },
+        {
+          "match": "^\\s*(spawn|box|zone|enemy|link|entity|warp|entry_\\d+)(?=\\s+\")",
+          "captures": { "1": { "name": "entity.name.type.entry.bdsl" } }
+        },
+        {
+          "match": "^\\s*(waypoint)\\s+(\\d+|0[xX][0-9A-Fa-f]+)",
+          "captures": {
+            "1": { "name": "entity.name.type.waypoint.bdsl" },
+            "2": { "name": "constant.numeric.integer.bdsl" }
+          }
+        },
+        {
+          "match": "(?<=\\btype=)(waypoint|resource|spawn)\\b",
+          "name": "constant.language.enum.bdsl"
+        },
+        {
+          "match": "^\\s*(condition)\\s+(variable|item_count|party_check|flag|unk_\\d+)\\b",
+          "captures": {
+            "1": { "name": "entity.other.attribute-name.condition.bdsl" },
+            "2": { "name": "constant.language.enum.bdsl" }
+          }
+        },
+        {
+          "match": "\\b(at)\\b(?=\\s*\\()",
+          "name": "keyword.other.at.bdsl"
+        }
+      ]
+    },
+    "field": {
+      "comment": "key = value lines in the scene header, entries and waypoints.",
+      "begin": "^\\s*([A-Za-z_][A-Za-z0-9_]*)\\s*(=)(?!=)",
+      "beginCaptures": {
+        "1": { "name": "entity.other.attribute-name.field.bdsl" },
+        "2": { "name": "keyword.operator.assignment.bdsl" }
+      },
+      "end": "(?=#)|$",
+      "patterns": [
+        {
+          "match": "\\b(town|indoor|dungeon|world|cube|type_\\d+)\\b",
+          "name": "constant.language.enum.bdsl"
+        },
+        { "include": "#string" },
+        { "include": "#number" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "expression": {
+      "patterns": [
+        { "include": "#string" },
+        { "include": "#keyword" },
+        { "include": "#builtin" },
+        { "include": "#reference" },
+        { "include": "#call" },
+        { "include": "#named-argument" },
+        { "include": "#constant" },
+        { "include": "#number" },
+        { "include": "#operator" },
+        { "include": "#punctuation" }
+      ]
+    },
+    "keyword": {
+      "patterns": [
+        {
+          "comment": "when and init open blocks, so they read as declarations rather than control flow.",
+          "match": "\\b(when|init)\\b(?=.*\\{\\s*(#.*)?$)",
+          "name": "entity.name.type.block.bdsl"
+        },
+        {
+          "match": "\\band\\b",
+          "name": "keyword.operator.logical.and.bdsl"
+        },
+        {
+          "match": "\\b(if|then|else)\\b",
+          "name": "keyword.control.conditional.bdsl"
+        },
+        {
+          "match": "\\b(goto|end|on_win|on_lose)\\b",
+          "name": "keyword.control.flow.bdsl"
+        },
+        {
+          "match": "(?<=\\()(item)\\b(?!\\s*=)",
+          "name": "keyword.other.item.bdsl"
+        }
+      ]
+    },
+    "builtin": {
+      "comment": "Condition and value helpers written with call syntax that are not opcodes.",
+      "match": "\\b(item_count|inventory_count|party_all|party_missing|savebit|cond|in_party|overflow|random|chara)(?=\\()",
+      "name": "support.function.builtin.bdsl"
+    },
+    "reference": {
+      "patterns": [
+        {
+          "match": "\\b(var|flag)(\\[)(\\d+|0[xX][0-9A-Fa-f]+)(\\])",
+          "captures": {
+            "1": { "name": "variable.language.bdsl" },
+            "2": { "name": "punctuation.section.brackets.begin.bdsl" },
+            "3": { "name": "constant.numeric.integer.bdsl" },
+            "4": { "name": "punctuation.section.brackets.end.bdsl" }
+          }
+        },
+        {
+          "match": "@\\d+",
+          "name": "entity.name.label.reference.bdsl markup.bold.label.bdsl"
+        }
+      ]
+    },
+    "call": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(?=\\()",
+      "name": "entity.name.function.opcode.bdsl"
+    },
+    "named-argument": {
+      "match": "\\b([A-Za-z_][A-Za-z0-9_]*)(=)(?!=)",
+      "captures": {
+        "1": { "name": "variable.parameter.bdsl" },
+        "2": { "name": "keyword.operator.assignment.bdsl" }
+      }
+    },
+    "constant": {
+      "patterns": [
+        {
+          "match": "\\b(shu|jiro|kluke|marumaro|zola|all)\\b",
+          "name": "constant.language.party.bdsl"
+        },
+        {
+          "match": "\\b(playtime|realtime|leader_id|party_count|gold|medals|encounters|chapter|global_4095)\\b",
+          "name": "support.variable.bdsl"
+        }
+      ]
+    },
+    "string": {
+      "begin": "\"",
+      "beginCaptures": { "0": { "name": "punctuation.definition.string.begin.bdsl" } },
+      "end": "\"",
+      "endCaptures": { "0": { "name": "punctuation.definition.string.end.bdsl" } },
+      "name": "string.quoted.double.bdsl",
+      "patterns": [
+        { "match": "\\\\.", "name": "constant.character.escape.bdsl" }
+      ]
+    },
+    "number": {
+      "patterns": [
+        {
+          "match": "(?<!\\w)0[xX][0-9A-Fa-f]+\\b",
+          "name": "constant.numeric.hex.bdsl"
+        },
+        {
+          "comment": "Round-trip float text can use an exponent, e.g. 1E-05.",
+          "match": "(?<!\\w)[-+]?\\d+(\\.\\d*)?[eE][-+]?\\d+\\b",
+          "name": "constant.numeric.float.bdsl"
+        },
+        {
+          "comment": "The dot must not start a '..' chapter range.",
+          "match": "(?<!\\w)[-+]?\\d+\\.(?!\\.)\\d*",
+          "name": "constant.numeric.float.bdsl"
+        },
+        {
+          "match": "(?<!\\w)[-+]?\\d+\\b",
+          "name": "constant.numeric.integer.bdsl"
+        }
+      ]
+    },
+    "operator": {
+      "patterns": [
+        { "match": "\\.\\.", "name": "keyword.operator.range.bdsl" },
+        { "match": "==|!=|>=|<=|>|<", "name": "keyword.operator.comparison.bdsl" },
+        { "match": "\\+=|-=|\\*=|/=|=", "name": "keyword.operator.assignment.bdsl" },
+        { "match": "!", "name": "keyword.operator.logical.not.bdsl" }
+      ]
+    },
+    "punctuation": {
+      "patterns": [
+        { "match": "\\{", "name": "punctuation.section.block.begin.bdsl" },
+        { "match": "\\}", "name": "punctuation.section.block.end.bdsl" },
+        { "match": "\\(", "name": "punctuation.section.parens.begin.bdsl" },
+        { "match": "\\)", "name": "punctuation.section.parens.end.bdsl" },
+        { "match": "\\[", "name": "punctuation.section.brackets.begin.bdsl" },
+        { "match": "\\]", "name": "punctuation.section.brackets.end.bdsl" },
+        { "match": ",", "name": "punctuation.separator.comma.bdsl" }
+      ]
+    }
+  }
+}

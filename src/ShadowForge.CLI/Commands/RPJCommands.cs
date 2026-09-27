@@ -1,4 +1,5 @@
 using System.CommandLine;
+using System.Text;
 using Microsoft.Extensions.Logging;
 using ShadowForge.Formats.BDSL;
 using ShadowForge.Formats.RPJ;
@@ -18,6 +19,7 @@ public static class RPJCommands
             "Directory containing RPJ files.", "*.rpj", ".bdsl", "decompiled", Decompile));
         cmd.Subcommands.Add(BuildBatchCommand(getFactory, "batch-compile", "Compile every BDSL file in a directory.",
             "Directory containing BDSL files.", "*.bdsl", ".rpj", "compiled", Compile));
+        cmd.Subcommands.Add(BuildCheckCommand(getFactory));
         return cmd;
     }
 
@@ -36,6 +38,45 @@ public static class RPJCommands
     {
         BinaryScene.Write(TextScene.ReadFile(input), output);
         return null;
+    }
+
+    /// <summary>
+    /// Compiles BDSL in memory and reports the first error without writing anything. "-" reads
+    /// stdin, so an editor can check an unsaved buffer.
+    /// </summary>
+    private static Command BuildCheckCommand(Func<ParseResult, ILoggerFactory> getFactory)
+    {
+        var fileArg = new Argument<string>("file") { Description = "BDSL file to check, or - for stdin." };
+        var jsonOpt = CliOutput.CreateJsonOption();
+        var cmd = new Command("check", "Check that BDSL text compiles, without writing an RPJ.");
+        cmd.Arguments.Add(fileArg);
+        cmd.Options.Add(jsonOpt);
+        cmd.SetAction(pr =>
+        {
+            string file = pr.GetValue(fileArg)!;
+            bool json = pr.GetValue(jsonOpt);
+            try
+            {
+                string text = file == "-"
+                    ? new StreamReader(Console.OpenStandardInput(), Encoding.UTF8).ReadToEnd()
+                    : File.ReadAllText(file, Encoding.UTF8);
+                var scene = TextScene.Read(text);
+                BinaryScene.Write(scene);
+                int scriptBlocks = scene.Entries.SelectMany(e => e.ScriptBlocks).Count();
+                return CliOutput.Success(json, "rpj.check", [], summary:
+                    $"OK: {scene.Entries.Count} entries, {scriptBlocks} script blocks, {scene.Waypoints.Count} waypoints");
+            }
+            catch (Exception ex)
+            {
+                // A FormatException is a mistake in the text and is the command's result. Anything else is a bug.
+                if (ex is not FormatException)
+                    getFactory(pr).CreateLogger("rpj.check").LogError(ex, "Failed to check {File}", file);
+                if (!json)
+                    Console.Error.WriteLine("error: " + ex.Message);
+                return CliOutput.Failure(json, "rpj.check", ex.Message);
+            }
+        });
+        return cmd;
     }
 
     private static Command BuildSingleCommand(

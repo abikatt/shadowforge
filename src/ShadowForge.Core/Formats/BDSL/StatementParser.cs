@@ -60,7 +60,10 @@ public static partial class StatementParser
             if (trimmed.StartsWith("//", StringComparison.Ordinal))
             {
                 string text = raw.TrimStart();
-                list.Add(new CommentStmt(text.Length > 2 && text[2] == ' ' ? text[3..] : text[2..]));
+                string comment = text.Length > 2 && text[2] == ' ' ? text[3..] : text[2..];
+                if (comment.Length > CommentText.MaxLength)
+                    throw c.Error($"comment is {comment.Length} characters, longer than {CommentText.MaxLength}");
+                list.Add(new CommentStmt(comment));
                 c.Index++;
                 continue;
             }
