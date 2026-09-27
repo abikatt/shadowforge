@@ -74,6 +74,27 @@ public partial class MainWindow
             else SetStatus("No Blender found. Use Browse… to pick blender.exe.");
         };
 
+        SettingsScriptEditorBox.SelectionChanged += (_, _) =>
+        {
+            if (_updatingSettings || SettingsScriptEditorBox.SelectedItem is not EditorOption editor
+                || editor.Path == _settings.ScriptEditorPath) return;
+            _settings.ScriptEditorPath = editor.Path;
+            _settings.Save();
+        };
+        SettingsBrowseScriptEditorButton.Click += async (_, _) =>
+        {
+            var picked = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
+            {
+                Title = "Choose the program to edit scene scripts in",
+                FileTypeFilter = [new FilePickerFileType("Programs") { Patterns = ["*.exe"] }],
+            });
+            if (picked is [var file, ..] && file.TryGetLocalPath() is { } path)
+            {
+                _settings.ScriptEditorPath = path;
+                SaveSettings();
+            }
+        };
+
         SettingsBrowseDerivedButton.Click += async (_, _) =>
         {
             if (await PickFolder("Choose where derived characters go") is { } path)
@@ -198,6 +219,11 @@ public partial class MainWindow
             ?? (_install is { } install ? $"Detected: {install.GameDataRoot}" : "Detected automatically");
         SettingsLanguageBox.SelectedItem = Languages.FirstOrDefault(l => l.Code == _settings.NameLanguage) ?? Languages[0];
         SettingsBlenderPath.Text = _settings.BlenderPath ?? "Not set. Found on first use, or pick one here.";
+        var editors = ScriptEditors.Detect();
+        var editor = ScriptEditors.OptionFor(_settings.ScriptEditorPath, editors);
+        if (!editors.Contains(editor)) editors.Add(editor);
+        SettingsScriptEditorBox.ItemsSource = editors;
+        SettingsScriptEditorBox.SelectedItem = editor;
         SettingsDerivedRoot.Text = _settings.DerivedRoot;
         SettingsMapExportRoot.Text = _settings.MapExportRoot;
         SettingsScriptRoot.Text = _settings.ScriptWorkRoot;

@@ -446,6 +446,15 @@
                 </DockPanel>
               </StackPanel>
               <StackPanel Classes="setting">
+                <TextBlock Classes="settingName" Text="Script editor" />
+                <TextBlock Classes="settingHelp"
+                           Text="The program Edit opens scene scripts in. Visual Studio Code with the BDSL extension checks scripts as you type." />
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                  <ComboBox x:Name="SettingsScriptEditorBox" MinWidth="200" />
+                  <Button x:Name="SettingsBrowseScriptEditorButton" Content="Browse…" />
+                </StackPanel>
+              </StackPanel>
+              <StackPanel Classes="setting">
                 <TextBlock Classes="settingName" Text="FFmpeg" />
                 <TextBlock Classes="settingHelp"
                            Text="Almost all of the game's audio is XMA, which the Audio tab decodes and converts through ffmpeg.exe. Without it, only the few PCM waves play, and replacements must be 16-bit PCM .wav files." />

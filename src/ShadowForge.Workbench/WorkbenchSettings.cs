@@ -39,6 +39,11 @@ public sealed class WorkbenchSettings
         Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), "ShadowForge", "scripts");
 
     /// <summary>
+    /// The program Edit opens scene scripts in, or null for the one Windows associates with .bdsl.
+    /// </summary>
+    public string? ScriptEditorPath { get; set; }
+
+    /// <summary>
     /// The mod that Build compiles scene scripts into, and whether it enables that mod.
     /// </summary>
     public string ScriptModName { get; set; } = "scene_edits";

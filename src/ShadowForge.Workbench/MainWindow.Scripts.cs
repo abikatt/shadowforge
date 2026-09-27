@@ -1,9 +1,7 @@
 using System.ComponentModel;
-using System.Diagnostics;
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using Avalonia.Threading;
-using Microsoft.Win32;
 using ShadowForge.GameData;
 using ShadowForge.GameData.Scripts;
 
@@ -90,10 +88,17 @@ public partial class MainWindow
                 var opened = workspace.Open(row.Entry);
                 Dispatcher.UIThread.Post(() =>
                 {
-                    OpenInEditor(opened.Path);
                     string warning = opened.RoundTrips
                         ? ""
                         : " Warning: the shipped script does not rebuild identically, so building it may lose data.";
+                    try
+                    {
+                        ScriptEditors.Open(opened.Path, _settings.ScriptEditorPath);
+                    }
+                    catch (Exception ex) when (ex is Win32Exception or InvalidOperationException)
+                    {
+                        warning += $" Could not start the script editor ({ex.Message}). Choose another in Settings.";
+                    }
                     SetStatus((opened.Created ? $"Decompiled {row.FileName} to {opened.Path}."
                         : $"Opened your existing edit of {row.FileName}.") + warning, Path.GetDirectoryName(opened.Path));
                     if (ReferenceEquals(_selectedMap, map)) ShowScripts(map);
@@ -164,34 +169,4 @@ public partial class MainWindow
 
     private static bool IsValidModName(string name) =>
         name.Length > 0 && name.All(c => char.IsLetterOrDigit(c) || c is ' ' or '-' or '_');
-
-    /// <summary>
-    /// Opens a file in the program Windows associates with its extension, else in Notepad,
-    /// so a first edit does not stop at the "How do you want to open this file?" prompt.
-    /// </summary>
-    private static void OpenInEditor(string path)
-    {
-        if (HasAssociation(Path.GetExtension(path)))
-        {
-            try
-            {
-                Process.Start(new ProcessStartInfo(path) { UseShellExecute = true });
-                return;
-            }
-            catch (Win32Exception)
-            {
-            }
-        }
-        Process.Start("notepad.exe", path);
-    }
-
-    private static bool HasAssociation(string extension)
-    {
-        if (!OperatingSystem.IsWindows()) return true;
-        using var userChoice = Registry.CurrentUser.OpenSubKey(
-            $@"Software\Microsoft\Windows\CurrentVersion\Explorer\FileExts\{extension}\UserChoice");
-        if (userChoice?.GetValue("ProgId") is string { Length: > 0 }) return true;
-        using var classKey = Registry.ClassesRoot.OpenSubKey(extension);
-        return classKey?.GetValue(null) is string { Length: > 0 };
-    }
 }
