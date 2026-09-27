@@ -59,7 +59,7 @@ public partial class MainWindow
 
     private string? Ffmpeg => AudioTools.FindFfmpeg(_settings.FfmpegPath);
 
-    private string? XmaEncoder => AudioTools.FindXmaEncoder(_settings.XmaEncoderPath);
+    private string? XmaEncoder => ShadowForge.Platform.XmaEncoder.Find(_settings.XmaEncoderPath);
 
     private AudioWorkspace AudioWork => new(_settings.AudioWorkRoot);
 

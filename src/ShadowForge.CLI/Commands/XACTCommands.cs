@@ -1,6 +1,7 @@
 using System.CommandLine;
 using Microsoft.Extensions.Logging;
 using ShadowForge.Formats.XACT;
+using ShadowForge.Platform;
 
 namespace ShadowForge.CLI.Commands;
 
@@ -165,20 +166,41 @@ public static class XACTCommands
     private static Command BuildReplaceCommand(Func<ParseResult, ILoggerFactory> getFactory)
     {
         var fileArg = new Argument<FileInfo>("file") { Description = "Wave bank (.xwb)." };
-        var wavArg = new Argument<FileInfo>("wav") { Description = "Replacement 16-bit PCM .wav file." };
+        var wavArg = new Argument<FileInfo>("audio")
+            { Description = "Replacement audio: a 16-bit PCM .wav, or an .xma file already encoded with xmaencode /S." };
         var indexOpt = new Option<int?>("--index") { Description = "Wave index to replace." };
         var cueOpt = new Option<string?>("--cue") { Description = "Cue name to replace, looked up in the sound bank." };
         var soundBankOpt = new Option<FileInfo?>("--sound-bank")
             { Description = "Sound bank (.xsb) for --cue (default: the .xsb beside the wave bank)." };
+        var codecOpt = new Option<string>("--codec")
+        {
+            Description = "How a .wav is stored: xma (encoded, as retail), pcm (uncompressed), or auto: "
+                          + "the replaced wave's codec, falling back to pcm with a warning when no encoder is found.",
+            DefaultValueFactory = _ => "auto",
+        };
+        codecOpt.AcceptOnlyFromAmong("auto", "xma", "pcm");
+        var qualityOpt = new Option<int>("--quality")
+        {
+            Description = $"XMA quality, 1 (smallest) to 100 (best). Default {XmaEncoder.DefaultQuality}.",
+            DefaultValueFactory = _ => XmaEncoder.DefaultQuality,
+        };
+        var encoderOpt = new Option<FileInfo?>("--xma-encoder")
+        {
+            Description = $"The Xbox 360 SDK's xmaencode.exe (default: {XmaEncoder.EnvironmentVariable}, "
+                          + "then beside sforge, then PATH).",
+        };
         var outputOpt = new Option<string?>("-o") { Description = "Output .xwb file (default: <file>.new.xwb)." };
         var jsonOpt = CliOutput.CreateJsonOption();
 
-        var cmd = new Command("replace", "Replace one wave in a wave bank with 16-bit PCM audio.");
+        var cmd = new Command("replace", "Replace one wave in a wave bank, encoding it as XMA or storing it as PCM.");
         cmd.Arguments.Add(fileArg);
         cmd.Arguments.Add(wavArg);
         cmd.Options.Add(indexOpt);
         cmd.Options.Add(cueOpt);
         cmd.Options.Add(soundBankOpt);
+        cmd.Options.Add(codecOpt);
+        cmd.Options.Add(qualityOpt);
+        cmd.Options.Add(encoderOpt);
         cmd.Options.Add(outputOpt);
         cmd.Options.Add(jsonOpt);
 
@@ -190,6 +212,9 @@ public static class XACTCommands
             int? index = pr.GetValue(indexOpt);
             string? cueName = pr.GetValue(cueOpt);
             var soundBankFile = pr.GetValue(soundBankOpt);
+            string codec = pr.GetValue(codecOpt)!;
+            int quality = pr.GetValue(qualityOpt);
+            var encoderFile = pr.GetValue(encoderOpt);
             bool json = pr.GetValue(jsonOpt);
 
             string output = pr.GetValue(outputOpt) is { Length: > 0 } o
@@ -228,20 +253,57 @@ public static class XACTCommands
                     throw new ArgumentOutOfRangeException(nameof(index), target,
                         $"Wave index must be 0-{bank.Entries.Count - 1}.");
 
-                var replaced = bank.Entries[target];
-                if (replaced.Format.Tag != WaveFormatTag.PCM)
-                    warnings.Add(new CliWarning("codec-change",
-                        $"entry {target} was {replaced.Format.Tag} and becomes PCM, its seek table entry is unchanged"));
+                if (quality is < 1 or > 100)
+                    throw new ArgumentException($"--quality must be 1-100, not {quality}.");
+                if (encoderFile is { Exists: false })
+                    throw new FileNotFoundException("The --xma-encoder file does not exist.", encoderFile.FullName);
 
-                var wav = WavFile.ReadFile(wavFile.FullName);
-                bank.ReplaceEntry(target, wav);
+                var replaced = bank.Entries[target];
+                string stored;
+                if (wavFile.Extension.Equals(".xma", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (codec == "pcm")
+                        throw new ArgumentException("--codec pcm needs a .wav; an .xma file is already encoded.");
+                    var xma = XmaFile.ReadFile(wavFile.FullName);
+                    bank.ReplaceEntry(target, xma);
+                    stored = $"XMA from {wavFile.Name} ({xma.Channels}ch {xma.SampleRate}Hz)";
+                }
+                else
+                {
+                    var wav = WavFile.ReadFile(wavFile.FullName);
+                    bool wantXma = codec == "xma" || (codec == "auto" && replaced.Format.Tag == WaveFormatTag.XMA);
+                    string? encoder = wantXma ? XmaEncoder.Find(encoderFile?.FullName) : null;
+                    if (wantXma && encoder is null)
+                    {
+                        string hint = $"Pass --xma-encoder or set {XmaEncoder.EnvironmentVariable}.";
+                        if (codec == "xma") throw new FileNotFoundException("No XMA encoder found. " + hint);
+                        warnings.Add(new CliWarning("no-encoder", "no XMA encoder found, so the wave is stored as PCM. " + hint));
+                    }
+
+                    string format = $"{wav.FrameCount} samples ({wav.Channels}ch {wav.SampleRate}Hz)";
+                    if (encoder is not null)
+                    {
+                        bank.ReplaceEntry(target, XmaFile.Read(XmaEncoder.Encode(wav, encoder, quality), wavFile.Name));
+                        stored = $"{format} encoded as XMA at quality {quality}";
+                    }
+                    else
+                    {
+                        if (replaced.Format.Tag != WaveFormatTag.PCM)
+                            warnings.Add(new CliWarning("codec-change",
+                                $"entry {target} was {replaced.Format.Tag} and becomes PCM, its seek table entry is unchanged"));
+                        bank.ReplaceEntry(target, wav);
+                        stored = $"{format} as PCM";
+                    }
+                }
 
                 OutputPath.CreateParentDirectory(output);
                 bank.WriteFile(output);
 
+                long before = file.Length;
+                long after = new FileInfo(output).Length;
                 return CliOutput.Success(json, "xact.replace", [output], warnings,
-                    $"Replaced wave {target} with {wav.FrameCount} samples " +
-                    $"({wav.Channels}ch {wav.SampleRate}Hz). Saved to {Path.GetFileName(output)}.");
+                    $"Replaced wave {target} with {stored}. Saved to {Path.GetFileName(output)} " +
+                    $"({before / 1024:N0} KiB -> {after / 1024:N0} KiB).");
             }
             catch (Exception ex)
             {

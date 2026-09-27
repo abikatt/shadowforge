@@ -189,7 +189,7 @@ public partial class MainWindow
         };
         SettingsDetectXmaButton.Click += (_, _) =>
         {
-            if (AudioTools.FindXmaEncoder(null) is { } found) SaveXmaEncoderPath(found);
+            if (ShadowForge.Platform.XmaEncoder.Find(null) is { } found) SaveXmaEncoderPath(found);
             else SetStatus("No xmaencode.exe found beside ShadowForge or on PATH. Use Browse… to pick it.");
         };
 
@@ -233,7 +233,7 @@ public partial class MainWindow
             ?? (AudioTools.FindFfmpeg(null) is { } found ? $"Detected: {found}" : "Not found. Pick ffmpeg.exe to hear and replace XMA audio.");
         SettingsAudioWorkRoot.Text = _settings.AudioWorkRoot;
         SettingsXmaPath.Text = _settings.XmaEncoderPath
-            ?? (AudioTools.FindXmaEncoder(null) is { } encoder
+            ?? (ShadowForge.Platform.XmaEncoder.Find(null) is { } encoder
                 ? $"Detected: {encoder}"
                 : "Not found. Pick xmaencode.exe to save replacements as XMA and build them into mods.");
         SettingsExportTextures.IsChecked = _settings.ExportTextures;

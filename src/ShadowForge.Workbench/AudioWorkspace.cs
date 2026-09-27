@@ -1,6 +1,7 @@
 using ShadowForge.Formats.XACT;
 using ShadowForge.GameData.Audio;
 using ShadowForge.GameData.Mods;
+using ShadowForge.Platform;
 
 namespace ShadowForge.Workbench;
 
@@ -66,7 +67,7 @@ public sealed class AudioWorkspace
         bool xma = xmaEncoder is not null;
         string path = PathFor(bank, index, xma);
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        if (xma) File.WriteAllBytes(path, AudioTools.EncodeXma(wav, xmaEncoder!));
+        if (xma) File.WriteAllBytes(path, XmaEncoder.Encode(wav, xmaEncoder!));
         else wav.WriteFile(path);
 
         string other = PathFor(bank, index, !xma);
@@ -152,7 +153,7 @@ public sealed class AudioWorkspace
             }
             else
             {
-                xma = AudioTools.EncodeXma(WavFile.ReadFile(replacement.Path), xmaEncoder!);
+                xma = XmaEncoder.Encode(WavFile.ReadFile(replacement.Path), xmaEncoder!);
                 encoded++;
             }
             target.ReplaceEntry(replacement.Index, XmaFile.Read(xma, Path.GetFileName(replacement.Path)));
